@@ -1,0 +1,267 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AuditLogs {
+  Id                          String                  @id @db.Uuid
+  ReferrenceId                String?
+  ReferrenceType              String?
+  Notes                       String?
+  CreatedAt                   String?
+  ThirdPartySubscriptionId_FK String?                 @db.Uuid
+  ThirdPartySubscription      ThirdPartySubscription? @relation(fields: [ThirdPartySubscriptionId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FkeySubscription")
+
+  @@index([ThirdPartySubscriptionId_FK], map: "fki_FkeySubscription")
+}
+
+model GuestGroupMembers {
+  Id              String      @id @db.Uuid
+  GuestGroupId_FK String      @db.Uuid
+  GuestId_FK      String      @db.Uuid
+  CreatedAt       String?
+  UpdatedAt       String?
+  IsPrimaryGuest  String?
+  GuestShare      String?
+  GuestGroups     GuestGroups @relation(fields: [GuestGroupId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FKeyGroup")
+  Guests          Guests      @relation(fields: [GuestId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FKeyGuestKey")
+
+  @@index([GuestGroupId_FK], map: "fki_FKeyGroup")
+  @@index([GuestId_FK], map: "fki_FKeyGuestKey")
+}
+
+model GuestGroups {
+  Id                String              @id @db.Uuid
+  GuestGroupCode    String
+  GuestGroupType    String?
+  GuestGroupName    String
+  CreatedAt         String?
+  UpdatedAt         String?
+  Description       String?
+  PropertyId_FK     String              @db.Uuid
+  GuestGroupMembers GuestGroupMembers[]
+}
+
+model GuestMembership {
+  Id                  String  @id @db.Uuid
+  Guest_Id            String  @db.Uuid
+  TierLevel           String?
+  PointsBalance       Int?    @default(0)
+  TotalPointsEarned   Int?    @default(0)
+  TotalPointsRedeemed Int?    @default(0)
+  EnrollDate          String?
+  EndDate             String?
+  LastActivityDate    String?
+  EligibleRewards     String?
+  Status              String?
+  Notes               String?
+  IsActive            String?
+  Guests              Guests  @relation(fields: [Guest_Id], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FKey_Guest_Membership")
+}
+
+model GuestStayHistory {
+  Id                   String                @id @db.Uuid
+  ReservationId_FK     String                @db.Uuid
+  RoomId_FK            String                @db.Uuid
+  NumberOfAdults       String
+  NumberOfChilden      String?
+  ActualCheckedInDate  String?
+  ActualCheckedOutDate String?
+  Notes                String?
+  UpdatedBy            String?
+  CreatedAt            String
+  UpdatedAt            String?
+  IsShared             String?
+  Reservations         Reservations          @relation(fields: [ReservationId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FKeyReservation_GSH")
+  Rooms                Rooms                 @relation(fields: [RoomId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FKeyRoomID")
+  StayingGuestDetails  StayingGuestDetails[]
+
+  @@index([ReservationId_FK], map: "fki_FKeyReservation_GSH")
+  @@index([RoomId_FK], map: "fki_FKeyRoomID")
+}
+
+model Guests {
+  Id                  String                @id @db.Uuid
+  GuestType           String
+  FirstName           String
+  LastName            String
+  Gender              String?
+  DOB                 String?
+  Photo               Bytes?
+  Email               String?
+  Phone               String?
+  Address             Json?                 @db.Json
+  Country             String?
+  Language            String?
+  NumberOfVisits      Int?                  @db.SmallInt
+  LastVisitedDate     String?
+  Comments            String?
+  CreatedAt           String?
+  UpdatedAt           String?
+  GuestCode           String?
+  GuestGroupMembers   GuestGroupMembers[]
+  GuestMembership     GuestMembership[]
+  Reservations        Reservations[]
+  StayingGuestDetails StayingGuestDetails[]
+}
+
+model ReservationDetails {
+  Id               String       @id @db.Uuid
+  ReservationId_FK String       @db.Uuid
+  NumberOfRooms    String
+  Notes            String?
+  CreatedAt        String
+  UpdatedAt        String?
+  RoomTypeId_FK    String       @db.Uuid
+  Reservations     Reservations @relation(fields: [ReservationId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FKeyReservation")
+  RoomType         RoomType     @relation(fields: [RoomTypeId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FKeyRoomType_RD")
+
+  @@index([ReservationId_FK], map: "fki_FKeyReservation")
+  @@index([RoomTypeId_FK], map: "fki_FKeyRoomType_RD")
+}
+
+model Reservations {
+  Id                              String               @id @db.Uuid
+  PropertyId_FK                   String               @db.Uuid
+  ReservationCode                 String
+  ReservationSource               String
+  ReservationDate                 String
+  ReservationType                 String
+  PromotionId_FK                  String?              @db.Uuid
+  PrimaryGuestID_FK               String               @db.Uuid
+  GuestGroupMembersId_FK          String?              @db.Uuid
+  PrimaryGuestName                String
+  UtcTentativeCheckedInDate       String?
+  CheckInDate                     String?
+  UtcTentativeCheckedOutDate      String?
+  CheckOutDate                    String?
+  ReservationStatus               String
+  LastReservationStatusChangeDate String?
+  NumberOfAdults                  String
+  NumberOfChilden                 String?
+  Notes                           String?
+  CreatedAt                       String
+  UpdatedAt                       String?
+  UpdatedBy                       String?
+  TemporaryLockDate               String?
+  IsAutoSystemReservation         String?
+  UtcReservationDate              String?
+  UtcCheckInDate                  String?
+  UtcCheckOutDate                 String?
+  GuestStayHistory                GuestStayHistory[]
+  ReservationDetails              ReservationDetails[]
+  Guests                          Guests               @relation(fields: [PrimaryGuestID_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FkeyGuest")
+
+  @@index([PrimaryGuestID_FK], map: "fki_FkeyGuest")
+  @@index([GuestGroupMembersId_FK], map: "fki_FkeyGuestGroupMember")
+}
+
+model RoomType {
+  Id                 String               @id @db.Uuid
+  PropertyId_FK      String               @db.Uuid
+  RoomTypeName       String
+  IsActive           String
+  Notes              String?
+  CreatedAt          String
+  UpdatedAt          String?
+  ReservationDetails ReservationDetails[]
+  Rooms              Rooms[]
+  Property           Properties           @relation(fields: [PropertyId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model Rooms {
+  Id                String             @id @db.Uuid
+  PropertyId_FK     String             @db.Uuid
+  BuildingNo        String?
+  FloorNo           String?
+  RoomNo            String
+  RoomStatus        String?
+  NumberOfRooms     String?
+  NumberOfBeds      String?
+  NumberOfBathrooms String?
+  MaxCapacity       String?
+  IsActive          String
+  CreatedAt         String
+  UpdatedAt         String?
+  RoomTypeId_FK     String             @db.Uuid
+  GuestStayHistory  GuestStayHistory[]
+  RoomType          RoomType           @relation(fields: [RoomTypeId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FkeyRoomType_Rooms")
+
+  @@index([RoomTypeId_FK], map: "fki_FkeyRoomType_Rooms")
+}
+
+model StayingGuestDetails {
+  Id                    String           @id(map: "StayingGuestDet_pkey") @db.Uuid
+  GuestStayHistoryId_FK String           @db.Uuid
+  GuestId_FK            String           @db.Uuid
+  CreatedAt             String
+  UpdatedAt             String?
+  GuestName             String?
+  GuestStayHistory      GuestStayHistory @relation(fields: [GuestStayHistoryId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FKeyGSH")
+  Guests                Guests           @relation(fields: [GuestId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FKeyGuest_StayDet")
+
+  @@index([GuestStayHistoryId_FK], map: "fki_FKeyGSH")
+  @@index([GuestId_FK], map: "fki_FKeyGuest_StayDet")
+}
+
+model ThirdPartySubscription {
+  Id               String      @id @db.Uuid
+  Source           String?
+  CreatedAt        String
+  SubscriptionData String
+  ProcessStatus    String?
+  ErrorMessage     String?
+  ProcessDate      String?
+  RetryNo          Int?        @default(0) @db.SmallInt
+  EventType        String?
+  AuditLogs        AuditLogs[]
+}
+
+model Extensions {
+  Id                 String  @id @db.Uuid
+  PropertyId_Fk      String  @db.Uuid
+  ExtensionNumber    String
+  CreatedAt          String
+  IsActive           String?
+  Notes              String?
+  Category           String?
+  DepartmentNum      String?
+  DivisionNum        String?
+  SubDepartment      String?
+  FirstName          String?
+  LastName           String?
+  UserName           String?
+  LinePort1          String?
+  LinePort2          String?
+  LinePort3          String?
+  BuildingCode       String?
+  VoiceMailPassword  String?
+  VmCapable          String?
+  DndCapable         String?
+  JazzUserId         String?
+  PbxNum             String?
+  AdditionalSpUserId String?
+
+  @@unique([PropertyId_Fk, ExtensionNumber], map: "Property_Extension")
+}
+
+model RoomExtensions {
+  Id             String  @id @db.Uuid
+  RoomId_FK      String
+  ExtensionId_FK String
+  CreatedAt      String
+  IsActive       String?
+  Notes          String?
+
+  @@unique([RoomId_FK, ExtensionId_FK], map: "Room_Extension")
+}
+
+model Properties {
+  Id       String     @id @db.Uuid
+  name     String
+  RoomType RoomType[]
+}
