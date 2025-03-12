@@ -1,4 +1,49 @@
 -- CreateTable
+CREATE TABLE "User" (
+    "Id" UUID NOT NULL,
+    "Email" TEXT NOT NULL,
+    "Password" TEXT NOT NULL,
+
+    CONSTRAINT "User_pkey" PRIMARY KEY ("Id")
+);
+
+-- CreateTable
+CREATE TABLE "Role" (
+    "Id" UUID NOT NULL,
+    "Name" TEXT NOT NULL,
+    "Description" TEXT,
+
+    CONSTRAINT "Role_pkey" PRIMARY KEY ("Id")
+);
+
+-- CreateTable
+CREATE TABLE "UserRole" (
+    "Id" UUID NOT NULL,
+    "UserId" UUID NOT NULL,
+    "RoleId" UUID NOT NULL,
+
+    CONSTRAINT "UserRole_pkey" PRIMARY KEY ("Id")
+);
+
+-- CreateTable
+CREATE TABLE "Permission" (
+    "Id" UUID NOT NULL,
+    "Name" TEXT NOT NULL,
+    "Description" TEXT,
+
+    CONSTRAINT "Permission_pkey" PRIMARY KEY ("Id")
+);
+
+-- CreateTable
+CREATE TABLE "RolePermission" (
+    "Id" UUID NOT NULL,
+    "RoleId" UUID NOT NULL,
+    "PermissionId" UUID NOT NULL,
+
+    CONSTRAINT "RolePermission_pkey" PRIMARY KEY ("Id")
+);
+
+-- CreateTable
 CREATE TABLE "AuditLogs" (
     "Id" UUID NOT NULL,
     "ReferrenceId" TEXT,
@@ -254,6 +299,42 @@ CREATE TABLE "Properties" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "User_Email_key" ON "User"("Email");
+
+-- CreateIndex
+CREATE INDEX "User_Email_idx" ON "User"("Email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Role_Name_key" ON "Role"("Name");
+
+-- CreateIndex
+CREATE INDEX "Role_Name_idx" ON "Role"("Name");
+
+-- CreateIndex
+CREATE INDEX "fki_FkeyUser" ON "UserRole"("UserId");
+
+-- CreateIndex
+CREATE INDEX "fki_FkeyRole" ON "UserRole"("RoleId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserRole_UserId_RoleId_key" ON "UserRole"("UserId", "RoleId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Permission_Name_key" ON "Permission"("Name");
+
+-- CreateIndex
+CREATE INDEX "Permission_Name_idx" ON "Permission"("Name");
+
+-- CreateIndex
+CREATE INDEX "fki_FkeyRolePermissionToRole" ON "RolePermission"("RoleId");
+
+-- CreateIndex
+CREATE INDEX "fki_FkeyRolePermissionToPermission" ON "RolePermission"("PermissionId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "RolePermission_RoleId_PermissionId_key" ON "RolePermission"("RoleId", "PermissionId");
+
+-- CreateIndex
 CREATE INDEX "fki_FkeySubscription" ON "AuditLogs"("ThirdPartySubscriptionId_FK");
 
 -- CreateIndex
@@ -294,6 +375,18 @@ CREATE UNIQUE INDEX "Property_Extension" ON "Extensions"("PropertyId_FK", "Exten
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Room_Extension" ON "RoomExtensions"("RoomId_FK", "ExtensionId_FK");
+
+-- AddForeignKey
+ALTER TABLE "UserRole" ADD CONSTRAINT "UserRole_UserId_fkey" FOREIGN KEY ("UserId") REFERENCES "User"("Id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserRole" ADD CONSTRAINT "UserRole_RoleId_fkey" FOREIGN KEY ("RoleId") REFERENCES "Role"("Id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "RolePermission" ADD CONSTRAINT "RolePermission_RoleId_fkey" FOREIGN KEY ("RoleId") REFERENCES "Role"("Id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "RolePermission" ADD CONSTRAINT "RolePermission_PermissionId_fkey" FOREIGN KEY ("PermissionId") REFERENCES "Permission"("Id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "AuditLogs" ADD CONSTRAINT "FkeySubscription" FOREIGN KEY ("ThirdPartySubscriptionId_FK") REFERENCES "ThirdPartySubscription"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;

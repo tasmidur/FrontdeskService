@@ -48,11 +48,6 @@ export class GuestsService {
                 Guests: true,
               },
             },
-            Reservations: {
-              include: {
-                Guests: true,
-              },
-            },
           },
         },
         RoomType: {

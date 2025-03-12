@@ -1,4 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
+import { Public } from 'src/common/decorators/public.decorator';
 import { WebhookEventType } from '../../common/enums/subscription_event_names.enum';
 import { AppLoggerService } from '../../common/logger/logger.service';
 import { SubscriptionEventWebhookService } from '../subscription-event-webhook/subscription-event-webhook.service';
@@ -14,6 +15,7 @@ export class CheckInEventWebhookController {
   ) {}
 
   @Post('CheckIn')
+  @Public()
   async postCheckInJazzData(@Body() body: CheckInDto): Promise<any> {
     let reqBodyString = JSON.stringify(body);
     let source = 'Jazz';

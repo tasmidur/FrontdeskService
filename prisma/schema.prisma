@@ -7,6 +7,58 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  Id        String     @id @db.Uuid
+  Email     String     @unique
+  Password  String
+  UserRoles UserRole[] // Relation to the associative table
+
+  @@index([Email])
+}
+
+model Role {
+  Id          String           @id @db.Uuid
+  Name        String           @unique // e.g., "ADMIN", "USER"
+  Description String?
+  UserRoles   UserRole[] // Relation to the associative table
+  Permissions RolePermission[] // Relation to permissions (optional)
+
+  @@index([Name])
+}
+
+model UserRole {
+  Id     String @id @db.Uuid
+  UserId String @db.Uuid
+  RoleId String @db.Uuid
+  User   User   @relation(fields: [UserId], references: [Id])
+  Role   Role   @relation(fields: [RoleId], references: [Id])
+
+  @@unique([UserId, RoleId]) // Ensure a user can't have the same role twice
+  @@index([UserId], map: "fki_FkeyUser")
+  @@index([RoleId], map: "fki_FkeyRole")
+}
+
+model Permission {
+  Id          String           @id @db.Uuid
+  Name        String           @unique // e.g., "read:users", "write:users"
+  Description String?
+  Roles       RolePermission[] // Relation to roles (optional)
+
+  @@index([Name])
+}
+
+model RolePermission {
+  Id           String     @id @db.Uuid
+  RoleId       String     @db.Uuid
+  PermissionId String     @db.Uuid
+  Role         Role       @relation(fields: [RoleId], references: [Id])
+  Permission   Permission @relation(fields: [PermissionId], references: [Id])
+
+  @@unique([RoleId, PermissionId]) // Ensure a role can't have the same permission twice
+  @@index([RoleId], map: "fki_FkeyRolePermissionToRole")
+  @@index([PermissionId], map: "fki_FkeyRolePermissionToPermission")
+}
+
 model AuditLogs {
   Id                          String                  @id @db.Uuid
   ReferrenceId                String?
