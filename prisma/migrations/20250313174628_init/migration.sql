@@ -293,9 +293,24 @@ CREATE TABLE "RoomExtensions" (
 -- CreateTable
 CREATE TABLE "Properties" (
     "Id" UUID NOT NULL,
-    "name" TEXT NOT NULL,
+    "Name" TEXT NOT NULL,
 
     CONSTRAINT "Properties_pkey" PRIMARY KEY ("Id")
+);
+
+-- CreateTable
+CREATE TABLE "Call" (
+    "Id" UUID NOT NULL,
+    "ExtensionNumber" TEXT NOT NULL,
+    "CallType" TEXT NOT NULL,
+    "CallStatus" TEXT NOT NULL,
+    "CallDuration" DOUBLE PRECISION,
+    "VoiceMail" TEXT,
+    "NextWakeUpCall" TIMESTAMP(3),
+    "CreatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "UpdatedAt" TIMESTAMP(3),
+
+    CONSTRAINT "Call_pkey" PRIMARY KEY ("Id")
 );
 
 -- CreateIndex
@@ -375,6 +390,9 @@ CREATE UNIQUE INDEX "Property_Extension" ON "Extensions"("PropertyId_FK", "Exten
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Room_Extension" ON "RoomExtensions"("RoomId_FK", "ExtensionId_FK");
+
+-- CreateIndex
+CREATE INDEX "Call_ExtensionNumber_idx" ON "Call"("ExtensionNumber");
 
 -- AddForeignKey
 ALTER TABLE "UserRole" ADD CONSTRAINT "UserRole_UserId_fkey" FOREIGN KEY ("UserId") REFERENCES "User"("Id") ON DELETE RESTRICT ON UPDATE CASCADE;

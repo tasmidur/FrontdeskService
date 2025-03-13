@@ -79,7 +79,7 @@ export class GuestsService {
         ? `${stayingGuest.FirstName} ${stayingGuest.LastName}`
         : '',
       guestStatus: guestStay ? 'Checked In' : '',
-      propertyName: result.RoomType.Property.name,
+      propertyName: result.RoomType.Property.Name,
       roomNumber: result.RoomNo,
       extensionNumber: extension?.ExtensionNumber || '',
     };

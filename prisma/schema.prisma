@@ -303,6 +303,7 @@ model Extensions {
   PbxNum             String?
   AdditionalSpUserId String?
   RoomExtensions     RoomExtensions[] @relation("ExtensionToRoomExtensions")
+  Calls              Call[]           @relation("ExtensionToCall")
 
   @@unique([PropertyId_FK, ExtensionNumber], map: "Property_Extension")
 }
@@ -320,12 +321,30 @@ model RoomExtensions {
   @@unique([RoomId_FK, ExtensionId_FK], map: "Room_Extension")
 }
 
+model Call {
+  Id              String      @id @db.Uuid
+  PropertyId_FK   String      @db.Uuid
+  Property        Properties  @relation("PropertyToCall", fields: [PropertyId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
+  ExtensionNumber String
+  Extension       Extensions? @relation("ExtensionToCall", fields: [ExtensionNumber, PropertyId_FK], references: [ExtensionNumber, PropertyId_FK], onDelete: NoAction, onUpdate: NoAction)
+  CallType        String
+  CallStatus      String
+  CallDuration    Float?
+  VoiceMail       String?
+  NextWakeUpCall  DateTime?
+  CreatedAt       DateTime    @default(now())
+  UpdatedAt       DateTime?
+
+  @@index([ExtensionNumber, CreatedAt])
+}
+
 model Properties {
   Id           String         @id @db.Uuid
-  name         String
+  Name         String
   RoomTypes    RoomType[]     @relation("PropertyToRoomType")
   Rooms        Rooms[]        @relation("PropertyToRooms")
   Reservations Reservations[] @relation("PropertyToReservations")
   Extensions   Extensions[]   @relation("PropertyToExtensions")
   GuestGroups  GuestGroups[]  @relation("PropertyToGuestGroups")
+  Calls        Call[]         @relation("PropertyToCall")
 }
