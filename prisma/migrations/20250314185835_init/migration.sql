@@ -8,6 +8,18 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
+CREATE TABLE "UserProperty" (
+    "Id" UUID NOT NULL,
+    "UserId_FK" UUID,
+    "PropertyId_FK" UUID NOT NULL,
+    "IsActive" BOOLEAN NOT NULL DEFAULT false,
+    "CreatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "UpdatedAt" TIMESTAMP(3),
+
+    CONSTRAINT "UserProperty_pkey" PRIMARY KEY ("Id")
+);
+
+-- CreateTable
 CREATE TABLE "Role" (
     "Id" UUID NOT NULL,
     "Name" TEXT NOT NULL,
@@ -19,8 +31,8 @@ CREATE TABLE "Role" (
 -- CreateTable
 CREATE TABLE "UserRole" (
     "Id" UUID NOT NULL,
-    "UserId" UUID NOT NULL,
-    "RoleId" UUID NOT NULL,
+    "UserId_FK" UUID NOT NULL,
+    "RoleId_FK" UUID NOT NULL,
 
     CONSTRAINT "UserRole_pkey" PRIMARY KEY ("Id")
 );
@@ -37,8 +49,8 @@ CREATE TABLE "Permission" (
 -- CreateTable
 CREATE TABLE "RolePermission" (
     "Id" UUID NOT NULL,
-    "RoleId" UUID NOT NULL,
-    "PermissionId" UUID NOT NULL,
+    "RoleId_FK" UUID NOT NULL,
+    "PermissionId_FK" UUID NOT NULL,
 
     CONSTRAINT "RolePermission_pkey" PRIMARY KEY ("Id")
 );
@@ -291,17 +303,9 @@ CREATE TABLE "RoomExtensions" (
 );
 
 -- CreateTable
-CREATE TABLE "Properties" (
-    "Id" UUID NOT NULL,
-    "Name" TEXT NOT NULL,
-
-    CONSTRAINT "Properties_pkey" PRIMARY KEY ("Id")
-);
-
--- CreateTable
 CREATE TABLE "Call" (
     "Id" UUID NOT NULL,
-    "ExtensionNumber" TEXT NOT NULL,
+    "ExtensionId_FK" UUID NOT NULL,
     "CallType" TEXT NOT NULL,
     "CallStatus" TEXT NOT NULL,
     "CallDuration" DOUBLE PRECISION,
@@ -313,11 +317,28 @@ CREATE TABLE "Call" (
     CONSTRAINT "Call_pkey" PRIMARY KEY ("Id")
 );
 
+-- CreateTable
+CREATE TABLE "Property" (
+    "Id" UUID NOT NULL,
+    "Name" TEXT NOT NULL,
+
+    CONSTRAINT "Property_pkey" PRIMARY KEY ("Id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_Email_key" ON "User"("Email");
 
 -- CreateIndex
 CREATE INDEX "User_Email_idx" ON "User"("Email");
+
+-- CreateIndex
+CREATE INDEX "fki_FKeyUserPropertyToUser" ON "UserProperty"("UserId_FK");
+
+-- CreateIndex
+CREATE INDEX "fki_FKeyUserPropertyToProperty" ON "UserProperty"("PropertyId_FK");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserProperty_UserId_FK_PropertyId_FK_key" ON "UserProperty"("UserId_FK", "PropertyId_FK");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Role_Name_key" ON "Role"("Name");
@@ -326,13 +347,13 @@ CREATE UNIQUE INDEX "Role_Name_key" ON "Role"("Name");
 CREATE INDEX "Role_Name_idx" ON "Role"("Name");
 
 -- CreateIndex
-CREATE INDEX "fki_FkeyUser" ON "UserRole"("UserId");
+CREATE INDEX "fki_FkeyUser" ON "UserRole"("UserId_FK");
 
 -- CreateIndex
-CREATE INDEX "fki_FkeyRole" ON "UserRole"("RoleId");
+CREATE INDEX "fki_FkeyRole" ON "UserRole"("RoleId_FK");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "UserRole_UserId_RoleId_key" ON "UserRole"("UserId", "RoleId");
+CREATE UNIQUE INDEX "UserRole_UserId_FK_RoleId_FK_key" ON "UserRole"("UserId_FK", "RoleId_FK");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Permission_Name_key" ON "Permission"("Name");
@@ -341,13 +362,13 @@ CREATE UNIQUE INDEX "Permission_Name_key" ON "Permission"("Name");
 CREATE INDEX "Permission_Name_idx" ON "Permission"("Name");
 
 -- CreateIndex
-CREATE INDEX "fki_FkeyRolePermissionToRole" ON "RolePermission"("RoleId");
+CREATE INDEX "fki_FkeyRolePermissionToRole" ON "RolePermission"("RoleId_FK");
 
 -- CreateIndex
-CREATE INDEX "fki_FkeyRolePermissionToPermission" ON "RolePermission"("PermissionId");
+CREATE INDEX "fki_FkeyRolePermissionToPermission" ON "RolePermission"("PermissionId_FK");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "RolePermission_RoleId_PermissionId_key" ON "RolePermission"("RoleId", "PermissionId");
+CREATE UNIQUE INDEX "RolePermission_RoleId_FK_PermissionId_FK_key" ON "RolePermission"("RoleId_FK", "PermissionId_FK");
 
 -- CreateIndex
 CREATE INDEX "fki_FkeySubscription" ON "AuditLogs"("ThirdPartySubscriptionId_FK");
@@ -392,19 +413,25 @@ CREATE UNIQUE INDEX "Property_Extension" ON "Extensions"("PropertyId_FK", "Exten
 CREATE UNIQUE INDEX "Room_Extension" ON "RoomExtensions"("RoomId_FK", "ExtensionId_FK");
 
 -- CreateIndex
-CREATE INDEX "Call_ExtensionNumber_idx" ON "Call"("ExtensionNumber");
+CREATE INDEX "Call_ExtensionId_FK_CreatedAt_idx" ON "Call"("ExtensionId_FK", "CreatedAt");
 
 -- AddForeignKey
-ALTER TABLE "UserRole" ADD CONSTRAINT "UserRole_UserId_fkey" FOREIGN KEY ("UserId") REFERENCES "User"("Id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "UserProperty" ADD CONSTRAINT "UserProperty_UserId_FK_fkey" FOREIGN KEY ("UserId_FK") REFERENCES "User"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "UserRole" ADD CONSTRAINT "UserRole_RoleId_fkey" FOREIGN KEY ("RoleId") REFERENCES "Role"("Id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "UserProperty" ADD CONSTRAINT "UserProperty_PropertyId_FK_fkey" FOREIGN KEY ("PropertyId_FK") REFERENCES "Property"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "RolePermission" ADD CONSTRAINT "RolePermission_RoleId_fkey" FOREIGN KEY ("RoleId") REFERENCES "Role"("Id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "UserRole" ADD CONSTRAINT "UserRole_UserId_FK_fkey" FOREIGN KEY ("UserId_FK") REFERENCES "User"("Id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "RolePermission" ADD CONSTRAINT "RolePermission_PermissionId_fkey" FOREIGN KEY ("PermissionId") REFERENCES "Permission"("Id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "UserRole" ADD CONSTRAINT "UserRole_RoleId_FK_fkey" FOREIGN KEY ("RoleId_FK") REFERENCES "Role"("Id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "RolePermission" ADD CONSTRAINT "RolePermission_RoleId_FK_fkey" FOREIGN KEY ("RoleId_FK") REFERENCES "Role"("Id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "RolePermission" ADD CONSTRAINT "RolePermission_PermissionId_FK_fkey" FOREIGN KEY ("PermissionId_FK") REFERENCES "Permission"("Id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "AuditLogs" ADD CONSTRAINT "FkeySubscription" FOREIGN KEY ("ThirdPartySubscriptionId_FK") REFERENCES "ThirdPartySubscription"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
@@ -416,7 +443,7 @@ ALTER TABLE "GuestGroupMembers" ADD CONSTRAINT "FKeyGroup" FOREIGN KEY ("GuestGr
 ALTER TABLE "GuestGroupMembers" ADD CONSTRAINT "FKeyGuestKey" FOREIGN KEY ("GuestId_FK") REFERENCES "Guests"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "GuestGroups" ADD CONSTRAINT "GuestGroups_PropertyId_FK_fkey" FOREIGN KEY ("PropertyId_FK") REFERENCES "Properties"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "GuestGroups" ADD CONSTRAINT "GuestGroups_PropertyId_FK_fkey" FOREIGN KEY ("PropertyId_FK") REFERENCES "Property"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "GuestMembership" ADD CONSTRAINT "FKey_Guest_Membership" FOREIGN KEY ("Guest_Id") REFERENCES "Guests"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
@@ -434,16 +461,16 @@ ALTER TABLE "ReservationDetails" ADD CONSTRAINT "FKeyReservation" FOREIGN KEY ("
 ALTER TABLE "ReservationDetails" ADD CONSTRAINT "FKeyRoomType_RD" FOREIGN KEY ("RoomTypeId_FK") REFERENCES "RoomType"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "Reservations" ADD CONSTRAINT "Reservations_PropertyId_FK_fkey" FOREIGN KEY ("PropertyId_FK") REFERENCES "Properties"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "Reservations" ADD CONSTRAINT "Reservations_PropertyId_FK_fkey" FOREIGN KEY ("PropertyId_FK") REFERENCES "Property"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "Reservations" ADD CONSTRAINT "FkeyGuest" FOREIGN KEY ("PrimaryGuestID_FK") REFERENCES "Guests"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "RoomType" ADD CONSTRAINT "RoomType_PropertyId_FK_fkey" FOREIGN KEY ("PropertyId_FK") REFERENCES "Properties"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "RoomType" ADD CONSTRAINT "RoomType_PropertyId_FK_fkey" FOREIGN KEY ("PropertyId_FK") REFERENCES "Property"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "Rooms" ADD CONSTRAINT "Rooms_PropertyId_FK_fkey" FOREIGN KEY ("PropertyId_FK") REFERENCES "Properties"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "Rooms" ADD CONSTRAINT "Rooms_PropertyId_FK_fkey" FOREIGN KEY ("PropertyId_FK") REFERENCES "Property"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "Rooms" ADD CONSTRAINT "FkeyRoomType_Rooms" FOREIGN KEY ("RoomTypeId_FK") REFERENCES "RoomType"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
@@ -455,10 +482,13 @@ ALTER TABLE "StayingGuestDetails" ADD CONSTRAINT "FKeyGSH" FOREIGN KEY ("GuestSt
 ALTER TABLE "StayingGuestDetails" ADD CONSTRAINT "FKeyGuest_StayDet" FOREIGN KEY ("GuestId_FK") REFERENCES "Guests"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "Extensions" ADD CONSTRAINT "Extensions_PropertyId_FK_fkey" FOREIGN KEY ("PropertyId_FK") REFERENCES "Properties"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "Extensions" ADD CONSTRAINT "Extensions_PropertyId_FK_fkey" FOREIGN KEY ("PropertyId_FK") REFERENCES "Property"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "RoomExtensions" ADD CONSTRAINT "RoomExtensions_RoomId_FK_fkey" FOREIGN KEY ("RoomId_FK") REFERENCES "Rooms"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "RoomExtensions" ADD CONSTRAINT "RoomExtensions_ExtensionId_FK_fkey" FOREIGN KEY ("ExtensionId_FK") REFERENCES "Extensions"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "Call" ADD CONSTRAINT "Call_ExtensionId_FK_fkey" FOREIGN KEY ("ExtensionId_FK") REFERENCES "Extensions"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;

@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UtilityService } from 'src/common/utils/utility/utility.service';
 import { PrismaService } from '../database/prisma.service';
+import { IAuthUserResponse } from './interfaces/auth.interface';
 
 @Injectable()
 export class AuthService {
@@ -12,51 +13,66 @@ export class AuthService {
     private utilityService: UtilityService,
   ) {}
 
-  async validateUser(email: string, password: string): Promise<any> {
+  async getAuthUser(email: string): Promise<IAuthUserResponse> {
     const user = await this.prismaService.user.findUnique({
-      where: { Email: email },
+      where: { Email: email }, // Match schema's 'Email'
       include: {
         UserRoles: {
           include: {
             Role: {
               include: {
-                Permissions: {
-                  include: { Permission: true },
-                },
+                Permissions: { include: { Permission: true } },
               },
             },
+          },
+        },
+        UserProperties: {
+          include: {
+            Property: true,
           },
         },
       },
     });
 
-    if (user && (await bcrypt.compare(password, user.Password))) {
-      const { Password, ...result } = user;
-      return result;
+    if (!user) {
+      throw new UnauthorizedException('User not found');
     }
-    return null;
+
+    // Return user data to be set in request.user
+    return {
+      Id: user.Id,
+      Email: user.Email,
+      Roles: user.UserRoles.map(ur => ur.Role?.Name),
+      Permissions: user.UserRoles.flatMap(ur =>
+        ur.Role?.Permissions?.map(rp => rp.Permission.Name),
+      ),
+      Properties: user?.UserProperties?.map(up => up.Property) || [], // Include user properties
+      ActiveProperty: (user.UserProperties?.find(up => up.IsActive) || {})
+        ?.Property, // Include active user properties
+    };
   }
 
   async login(email: string, password: string) {
-    const user = await this.validateUser(email, password);
+    const user = await this.prismaService.user.findUnique({
+      where: { Email: email },
+    });
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-
-    const roles = user.UserRoles.map(ur => ur.Role.Name);
-    const permissions = user.UserRoles.flatMap(ur =>
-      ur.Role.Permissions.map(rp => rp.Permission.Name),
-    );
+    if (user && !(await bcrypt.compare(password, user.Password))) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
     const payload = {
       Email: user.Email,
       Sub: user.Id,
-      Roles: roles, // Array of role names
-      Permissions: permissions, // Array of permission names
     };
 
     return {
-      AccessToken: this.jwtService.sign(payload),
+      accessToken: this.jwtService.sign(payload),
+      refreshToken: this.jwtService.sign(payload, {
+        expiresIn: '7d',
+      }),
     };
   }
 
@@ -81,7 +97,7 @@ export class AuthService {
         UserRoles: {
           create: roles.map(role => ({
             Id: this.utilityService.generateUuid(),
-            RoleId: role.Id,
+            RoleId_FK: role.Id,
           })),
         },
       },

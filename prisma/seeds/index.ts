@@ -1,11 +1,12 @@
 // prisma/seeds/index.ts
 import { PrismaClient } from '@prisma/client';
 import { seedProperty } from './property.seed';
+import { seedUserRolePermission } from './user-role-permission.seed';
 const prisma = new PrismaClient();
 
 const run = async () => {
   try {
-    //await seedUserRolePermission();
+    await seedUserRolePermission();
     await seedProperty();
     console.log('All seeding completed successfully.');
   } catch (error) {

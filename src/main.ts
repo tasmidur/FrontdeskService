@@ -5,6 +5,7 @@ import { AppModule } from './app.module';
 import { ValidationExceptionFilter } from './common/filters/validation-exception.filter';
 import { AppLoggerService } from './common/logger/logger.service';
 
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { CommonResponseInterceptor } from './common/interceptors/common-response.interceptor';
 
 async function bootstrap() {
@@ -31,7 +32,17 @@ async function bootstrap() {
   const port = configService.get<string>('PORT') ?? 8000;
   logger.log(`Application started on port: ${port}`);
 
+  const config = new DocumentBuilder()
+    .setTitle('Frontdesk')
+    .setDescription('The frontdesk API description')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, documentFactory);
   await app.listen(port);
+  console.log(`Application is running on: http://localhost:${port}`);
+  console.log(`Swagger UI available at: http://localhost:${port}/api/docs`);
 }
 
 bootstrap();

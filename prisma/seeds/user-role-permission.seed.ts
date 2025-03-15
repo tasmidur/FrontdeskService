@@ -40,7 +40,7 @@ async function upsertUser(email: string, password: string, roleIds: string[]) {
         deleteMany: {}, // Clear existing roles to avoid duplicates
         create: roleIds.map(roleId => ({
           Id: uuidv4(),
-          RoleId: roleId,
+          RoleId_FK: roleId,
         })),
       },
     },
@@ -51,7 +51,7 @@ async function upsertUser(email: string, password: string, roleIds: string[]) {
       UserRoles: {
         create: roleIds.map(roleId => ({
           Id: uuidv4(),
-          RoleId: roleId,
+          RoleId_FK: roleId,
         })),
       },
     },
@@ -62,13 +62,16 @@ async function upsertUser(email: string, password: string, roleIds: string[]) {
 async function upsertRolePermission(roleId: string, permissionId: string) {
   return prisma.rolePermission.upsert({
     where: {
-      RoleId_PermissionId: { RoleId: roleId, PermissionId: permissionId },
+      RoleId_FK_PermissionId_FK: {
+        RoleId_FK: roleId,
+        PermissionId_FK: permissionId,
+      },
     }, // Composite unique key
     update: {}, // No update needed, just ensure it exists
     create: {
       Id: uuidv4(),
-      RoleId: roleId,
-      PermissionId: permissionId,
+      RoleId_FK: roleId,
+      PermissionId_FK: permissionId,
     },
   });
 }
@@ -90,8 +93,8 @@ export async function seedUserRolePermission() {
   await upsertRolePermission(userRole.Id, readUsers.Id);
 
   // Upsert users with associated roles
-  await upsertUser('admin@example.com', hashedPassword, [adminRole.Id]);
-  await upsertUser('user@example.com', hashedPassword, [userRole.Id]);
+  await upsertUser('admin@admin.com', hashedPassword, [adminRole.Id]);
+  await upsertUser('user@admin.com', hashedPassword, [userRole.Id]);
 
   console.log('Seed complete for user, role, permission');
 }

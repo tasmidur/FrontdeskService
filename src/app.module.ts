@@ -22,6 +22,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './modules/auth/auth.module';
 import { AuthGuard } from './modules/auth/guards/auth.guard';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { CallsModule } from './modules/calls/calls.module';
 import { CronJobForWebHookModule } from './modules/cron-job-for-web-hook/cron-job-for-web-hook.module';
 
 @Module({
@@ -45,6 +46,7 @@ import { CronJobForWebHookModule } from './modules/cron-job-for-web-hook/cron-jo
     ExtensionsModule,
     CronJobForWebHookModule,
     AuthModule,
+    CallsModule,
   ],
   controllers: [AppController],
   providers: [

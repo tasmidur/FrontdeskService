@@ -8,12 +8,28 @@ datasource db {
 }
 
 model User {
-  Id        String     @id @db.Uuid
-  Email     String     @unique
-  Password  String
-  UserRoles UserRole[] // Relation to the associative table
+  Id             String         @id @db.Uuid
+  Email          String         @unique
+  Password       String
+  UserRoles      UserRole[] // Relation to the associative table
+  UserProperties UserProperty[] @relation("UserToUserProperty")
 
   @@index([Email])
+}
+
+model UserProperty {
+  Id            String    @id @db.Uuid
+  UserId_FK     String?   @db.Uuid
+  PropertyId_FK String    @db.Uuid
+  IsActive      Boolean   @default(false)
+  CreatedAt     DateTime  @default(now())
+  UpdatedAt     DateTime?
+  User          User?     @relation("UserToUserProperty", fields: [UserId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
+  Property      Property? @relation("PropertyToUserProperty", fields: [PropertyId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([UserId_FK, PropertyId_FK])
+  @@index([UserId_FK], map: "fki_FKeyUserPropertyToUser")
+  @@index([PropertyId_FK], map: "fki_FKeyUserPropertyToProperty")
 }
 
 model Role {
@@ -27,15 +43,15 @@ model Role {
 }
 
 model UserRole {
-  Id     String @id @db.Uuid
-  UserId String @db.Uuid
-  RoleId String @db.Uuid
-  User   User   @relation(fields: [UserId], references: [Id])
-  Role   Role   @relation(fields: [RoleId], references: [Id])
+  Id        String @id @db.Uuid
+  UserId_FK String @db.Uuid
+  RoleId_FK String @db.Uuid
+  User      User   @relation(fields: [UserId_FK], references: [Id])
+  Role      Role   @relation(fields: [RoleId_FK], references: [Id])
 
-  @@unique([UserId, RoleId]) // Ensure a user can't have the same role twice
-  @@index([UserId], map: "fki_FkeyUser")
-  @@index([RoleId], map: "fki_FkeyRole")
+  @@unique([UserId_FK, RoleId_FK]) // Ensure a user can't have the same role twice
+  @@index([UserId_FK], map: "fki_FkeyUser")
+  @@index([RoleId_FK], map: "fki_FkeyRole")
 }
 
 model Permission {
@@ -48,15 +64,15 @@ model Permission {
 }
 
 model RolePermission {
-  Id           String     @id @db.Uuid
-  RoleId       String     @db.Uuid
-  PermissionId String     @db.Uuid
-  Role         Role       @relation(fields: [RoleId], references: [Id])
-  Permission   Permission @relation(fields: [PermissionId], references: [Id])
+  Id              String     @id @db.Uuid
+  RoleId_FK       String     @db.Uuid
+  PermissionId_FK String     @db.Uuid
+  Role            Role       @relation(fields: [RoleId_FK], references: [Id])
+  Permission      Permission @relation(fields: [PermissionId_FK], references: [Id])
 
-  @@unique([RoleId, PermissionId]) // Ensure a role can't have the same permission twice
-  @@index([RoleId], map: "fki_FkeyRolePermissionToRole")
-  @@index([PermissionId], map: "fki_FkeyRolePermissionToPermission")
+  @@unique([RoleId_FK, PermissionId_FK]) // Ensure a role can't have the same permission twice
+  @@index([RoleId_FK], map: "fki_FkeyRolePermissionToRole")
+  @@index([PermissionId_FK], map: "fki_FkeyRolePermissionToPermission")
 }
 
 model AuditLogs {
@@ -95,7 +111,7 @@ model GuestGroups {
   UpdatedAt         String?
   Description       String?
   PropertyId_FK     String              @db.Uuid
-  Property          Properties          @relation("PropertyToGuestGroups", fields: [PropertyId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
+  Property          Property            @relation("PropertyToGuestGroups", fields: [PropertyId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
   GuestGroupMembers GuestGroupMembers[]
 }
 
@@ -180,7 +196,7 @@ model ReservationDetails {
 model Reservations {
   Id                              String               @id @db.Uuid
   PropertyId_FK                   String               @db.Uuid
-  Property                        Properties           @relation("PropertyToReservations", fields: [PropertyId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
+  Property                        Property             @relation("PropertyToReservations", fields: [PropertyId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
   ReservationCode                 String
   ReservationSource               String
   ReservationDate                 String
@@ -217,7 +233,7 @@ model Reservations {
 model RoomType {
   Id                 String               @id @db.Uuid
   PropertyId_FK      String               @db.Uuid
-  Property           Properties           @relation("PropertyToRoomType", fields: [PropertyId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
+  Property           Property             @relation("PropertyToRoomType", fields: [PropertyId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
   RoomTypeName       String
   IsActive           String
   Notes              String?
@@ -230,7 +246,7 @@ model RoomType {
 model Rooms {
   Id                String             @id @db.Uuid
   PropertyId_FK     String             @db.Uuid
-  Property          Properties         @relation("PropertyToRooms", fields: [PropertyId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
+  Property          Property           @relation("PropertyToRooms", fields: [PropertyId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
   BuildingNo        String?
   FloorNo           String?
   RoomNo            String
@@ -280,7 +296,7 @@ model ThirdPartySubscription {
 model Extensions {
   Id                 String           @id @db.Uuid
   PropertyId_FK      String           @db.Uuid
-  Property           Properties       @relation("PropertyToExtensions", fields: [PropertyId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
+  Property           Property         @relation("PropertyToExtensions", fields: [PropertyId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
   ExtensionNumber    String
   CreatedAt          String
   IsActive           String?
@@ -322,29 +338,27 @@ model RoomExtensions {
 }
 
 model Call {
-  Id              String      @id @db.Uuid
-  PropertyId_FK   String      @db.Uuid
-  Property        Properties  @relation("PropertyToCall", fields: [PropertyId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
-  ExtensionNumber String
-  Extension       Extensions? @relation("ExtensionToCall", fields: [ExtensionNumber, PropertyId_FK], references: [ExtensionNumber, PropertyId_FK], onDelete: NoAction, onUpdate: NoAction)
-  CallType        String
-  CallStatus      String
-  CallDuration    Float?
-  VoiceMail       String?
-  NextWakeUpCall  DateTime?
-  CreatedAt       DateTime    @default(now())
-  UpdatedAt       DateTime?
+  Id             String      @id @db.Uuid
+  ExtensionId_FK String      @db.Uuid
+  Extension      Extensions? @relation("ExtensionToCall", fields: [ExtensionId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
+  CallType       String
+  CallStatus     String
+  CallDuration   Float?
+  VoiceMail      String?
+  NextWakeUpCall DateTime?
+  CreatedAt      DateTime    @default(now())
+  UpdatedAt      DateTime?
 
-  @@index([ExtensionNumber, CreatedAt])
+  @@index([ExtensionId_FK, CreatedAt])
 }
 
-model Properties {
-  Id           String         @id @db.Uuid
-  Name         String
-  RoomTypes    RoomType[]     @relation("PropertyToRoomType")
-  Rooms        Rooms[]        @relation("PropertyToRooms")
-  Reservations Reservations[] @relation("PropertyToReservations")
-  Extensions   Extensions[]   @relation("PropertyToExtensions")
-  GuestGroups  GuestGroups[]  @relation("PropertyToGuestGroups")
-  Calls        Call[]         @relation("PropertyToCall")
+model Property {
+  Id             String         @id @db.Uuid
+  Name           String
+  RoomTypes      RoomType[]     @relation("PropertyToRoomType")
+  Rooms          Rooms[]        @relation("PropertyToRooms")
+  Reservations   Reservations[] @relation("PropertyToReservations")
+  Extensions     Extensions[]   @relation("PropertyToExtensions")
+  GuestGroups    GuestGroups[]  @relation("PropertyToGuestGroups")
+  UserProperties UserProperty[] @relation("PropertyToUserProperty")
 }
