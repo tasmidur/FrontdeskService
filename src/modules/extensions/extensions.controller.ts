@@ -36,8 +36,6 @@ export class ExtensionsController {
     const speedDialExtensions =
       await this.extensionsService.findSpeedDialExtensions(request);
     const response = speedDialExtensions?.map(_item => {
-      console.log(_item);
-
       return {
         Id: _item?.Id,
         ServiceType: _item.ServiceType,
