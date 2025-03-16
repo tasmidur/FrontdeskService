@@ -28,6 +28,7 @@ export class CallsService {
         ExtensionId_FK: extension?.Id,
         CallType: callDto.CallType,
         CallStatus: callDto.CallStatus,
+        CreatedAt: this.utilityService.getCurrentISODate(),
       },
     });
   }
@@ -39,6 +40,7 @@ export class CallsService {
       },
       data: {
         ...callDto,
+        UpdatedAt: this.utilityService.getCurrentISODate(),
       },
     });
   }

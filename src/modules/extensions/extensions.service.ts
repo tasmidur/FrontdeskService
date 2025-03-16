@@ -32,4 +32,22 @@ export class ExtensionsService {
       },
     });
   }
+
+  async findSpeedDialExtensions(request: any): Promise<any> {
+    const propertyId = request?.user?.ActiveProperty?.Id;
+    const speedDialExtensions =
+      await this.prismaService.speedDialExtension.findMany({
+        include: {
+          Extension: {
+            where: {
+              PropertyId_FK: propertyId,
+            },
+            include: {
+              Property: true,
+            },
+          },
+        },
+      });
+    return speedDialExtensions;
+  }
 }

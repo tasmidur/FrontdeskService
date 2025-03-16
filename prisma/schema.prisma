@@ -294,32 +294,33 @@ model ThirdPartySubscription {
 }
 
 model Extensions {
-  Id                 String           @id @db.Uuid
-  PropertyId_FK      String           @db.Uuid
-  Property           Property         @relation("PropertyToExtensions", fields: [PropertyId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
-  ExtensionNumber    String
-  CreatedAt          String
-  IsActive           String?
-  Notes              String?
-  Category           String?
-  DepartmentNum      String?
-  DivisionNum        String?
-  SubDepartment      String?
-  FirstName          String?
-  LastName           String?
-  UserName           String?
-  LinePort1          String?
-  LinePort2          String?
-  LinePort3          String?
-  BuildingCode       String?
-  VoiceMailPassword  String?
-  VmCapable          String?
-  DndCapable         String?
-  JazzUserId         String?
-  PbxNum             String?
-  AdditionalSpUserId String?
-  RoomExtensions     RoomExtensions[] @relation("ExtensionToRoomExtensions")
-  Calls              Call[]           @relation("ExtensionToCall")
+  Id                  String               @id @db.Uuid
+  PropertyId_FK       String               @db.Uuid
+  Property            Property             @relation("PropertyToExtensions", fields: [PropertyId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
+  ExtensionNumber     String
+  CreatedAt           String
+  IsActive            String?
+  Notes               String?
+  Category            String?
+  DepartmentNum       String?
+  DivisionNum         String?
+  SubDepartment       String?
+  FirstName           String?
+  LastName            String?
+  UserName            String?
+  LinePort1           String?
+  LinePort2           String?
+  LinePort3           String?
+  BuildingCode        String?
+  VoiceMailPassword   String?
+  VmCapable           String?
+  DndCapable          String?
+  JazzUserId          String?
+  PbxNum              String?
+  AdditionalSpUserId  String?
+  RoomExtensions      RoomExtensions[]     @relation("ExtensionToRoomExtensions")
+  Calls               Call[]               @relation("ExtensionToCall")
+  SpeedDialExtensions SpeedDialExtension[] @relation("ExtensionToSpeedDialExtension")
 
   @@unique([PropertyId_FK, ExtensionNumber], map: "Property_Extension")
 }
@@ -346,7 +347,7 @@ model Call {
   CallDuration   Float?
   VoiceMail      String?
   NextWakeUpCall DateTime?
-  CreatedAt      DateTime    @default(now())
+  CreatedAt      DateTime
   UpdatedAt      DateTime?
 
   @@index([ExtensionId_FK, CreatedAt])
@@ -361,4 +362,17 @@ model Property {
   Extensions     Extensions[]   @relation("PropertyToExtensions")
   GuestGroups    GuestGroups[]  @relation("PropertyToGuestGroups")
   UserProperties UserProperty[] @relation("PropertyToUserProperty")
+}
+
+model SpeedDialExtension {
+  Id             String    @id @db.Uuid
+  ExtensionId_FK String    @db.Uuid
+  ServiceType    String
+  CreatedAt      DateTime  @default(now())
+  UpdatedAt      DateTime?
+  IsActive       Boolean   @default(true)
+
+  Extension Extensions? @relation("ExtensionToSpeedDialExtension", fields: [ExtensionId_FK], references: [Id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([ServiceType, ExtensionId_FK])
 }

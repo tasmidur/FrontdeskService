@@ -8,7 +8,7 @@ export async function seedProperty() {
   await prisma.property.deleteMany();
   await prisma.property.create({
     data: {
-      Id: uuidv4(),
+      Id: '72a144cc-3dcd-4a7e-aa07-e31a47b3f3b5',
       Name: propertyName,
       UserProperties: {
         create: users.map(user => ({
