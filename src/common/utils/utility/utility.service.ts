@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { isValidPhoneNumber } from 'libphonenumber-js';
 import { DateTime } from 'luxon';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -61,5 +62,10 @@ export class UtilityService {
     hashedPassword: string,
   ): Promise<boolean> {
     return await bcrypt.compare(password, hashedPassword); // Compare the plaintext password with the hashed password
+  }
+
+  validatePhone(phone: string) {
+    const cleaned = phone.trim();
+    return cleaned.startsWith('+') && isValidPhoneNumber(cleaned);
   }
 }

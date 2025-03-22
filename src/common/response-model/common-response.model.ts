@@ -17,7 +17,6 @@ export class CommonResponse<T> {
     this.message = message;
     this.status = status;
     this.data = data;
-
     this.Result = message;
   }
 }

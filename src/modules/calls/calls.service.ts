@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { AppLoggerService } from 'src/common/logger/logger.service';
 import { UtilityService } from '../../common/utils/utility/utility.service';
 import { PrismaService } from '../database/prisma.service';
 import { CreateCallDto } from './dto/create-call.dto';
@@ -9,28 +10,57 @@ export class CallsService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly utilityService: UtilityService,
+    private readonly logger: AppLoggerService,
   ) {}
 
   async create(callDto: CreateCallDto, request: any): Promise<any> {
-    const extension = await this.prismaService.extensions.findFirst({
-      where: {
-        PropertyId_FK: request?.user?.ActiveProperty?.Id,
-        ExtensionNumber: callDto.ExtensionNumber,
-      }, // Assuming ExtensionNumber is part of the DTO
-    });
+    const requestPayload: any = {
+      Id: this.utilityService.generateUuid(),
+      CallType: callDto.CallType,
+      CallStatus: callDto.CallStatus,
+      CreatedAt: this.utilityService.getCurrentISODate(),
+    };
 
-    if (!extension) {
-      throw new Error('Extension not found');
+    if (this.utilityService.validatePhone(callDto.ExtensionNumber)) {
+      const guest = await this.prismaService.guests.findFirst({
+        where: {
+          Phone: callDto.ExtensionNumber,
+        },
+        select: {
+          Id: true,
+        },
+      });
+      if (guest) {
+        requestPayload.GuestId_FK = guest.Id || null;
+      } else {
+        this.logger.log(`Call Log:Guest:InvlidExtensionNumber: ${callDto}`);
+      }
+    } else {
+      const extension = await this.prismaService.extensions.findFirst({
+        select: {
+          Id: true,
+        },
+        where: {
+          PropertyId_FK: request?.user?.ActiveProperty?.Id,
+          ExtensionNumber: callDto.ExtensionNumber,
+        }, // Assuming ExtensionNumber is part of the DTO
+      });
+      if (extension) {
+        requestPayload.ExtensionId_FK = extension.Id || null;
+      } else {
+        this.logger.log(
+          `Call Log:Extensions:InvlidExtensionNumber: ${callDto}`,
+        );
+      }
     }
-    return await this.prismaService.call.create({
-      data: {
-        Id: this.utilityService.generateUuid(),
-        ExtensionId_FK: extension?.Id,
-        CallType: callDto.CallType,
-        CallStatus: callDto.CallStatus,
-        CreatedAt: this.utilityService.getCurrentISODate(),
-      },
-    });
+    if (requestPayload?.ExtensionId_FK || requestPayload?.GuestId_FK) {
+      await this.prismaService.call.create({
+        data: {
+          ...requestPayload, // Spread the requestPayload object
+        },
+      });
+    }
+    return 'Success';
   }
 
   async update(callDto: UpdateCallDto, id: string): Promise<any> {
@@ -111,10 +141,7 @@ export class CallsService {
         ExtensionNumber: extensionNumber,
       },
       include: {
-        Calls: {
-          orderBy: { CreatedAt: 'desc' }, // Sort by DateTime to get the most recent
-          take: 1, // Limit to 1 for the latest call
-        },
+        Property: true, // Include Property details
         RoomExtensions: {
           include: {
             Rooms: {
@@ -137,7 +164,10 @@ export class CallsService {
             },
           },
         },
-        Property: true, // Include Property details
+        Calls: {
+          orderBy: { CreatedAt: 'desc' }, // Sort by DateTime to get the most recent
+          take: 1, // Limit to 1 for the latest call
+        },
       },
     }); // Include Property details
     return extension;
