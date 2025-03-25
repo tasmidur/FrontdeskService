@@ -33,7 +33,9 @@ export class CallsService {
       if (guest) {
         requestPayload.GuestId_FK = guest.Id || null;
       } else {
-        this.logger.log(`Call Log:Guest:InvlidExtensionNumber: ${callDto}`);
+        this.logger.log(
+          `Call Log:Guest:InvlidExtensionNumber: ${JSON.stringify(callDto, null, 2)}`,
+        );
       }
     } else {
       const extension = await this.prismaService.extensions.findFirst({
@@ -49,11 +51,14 @@ export class CallsService {
         requestPayload.ExtensionId_FK = extension.Id || null;
       } else {
         this.logger.log(
-          `Call Log:Extensions:InvlidExtensionNumber: ${callDto}`,
+          `Call Log:Extensions:InvlidExtensionNumber: ${JSON.stringify(callDto, null, 2)}`,
         );
       }
     }
     if (requestPayload?.ExtensionId_FK || requestPayload?.GuestId_FK) {
+      this.logger.log(
+        `Call Log:Call:RequestPayload: ${JSON.stringify(requestPayload, null, 2)}`,
+      );
       await this.prismaService.call.create({
         data: {
           ...requestPayload, // Spread the requestPayload object
@@ -95,6 +100,7 @@ export class CallsService {
       skip: offset, // Skip the records for the previous pages
       take: limit, // Limit the number of records returned
       include: {
+        Guest: true,
         Extension: {
           where: {
             ExtensionNumber: extensionNumber,
@@ -108,11 +114,7 @@ export class CallsService {
                     GuestStayHistory: {
                       where: { ActualCheckedOutDate: null },
                       take: 1,
-                      include: {
-                        StayingGuestDetails: {
-                          include: { Guests: true },
-                        },
-                      },
+                      include: { Guests: true },
                     },
                   },
                 },
@@ -151,13 +153,7 @@ export class CallsService {
                     ActualCheckedOutDate: null, // Assume active stay if not checked out
                   },
                   take: 1, // Most recent stay
-                  include: {
-                    StayingGuestDetails: {
-                      include: {
-                        Guests: true, // For Guest Name and Status
-                      },
-                    },
-                  },
+                  include: { Guests: true },
                 },
                 RoomType: true, // Include Room Type details
               },

@@ -28,6 +28,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(new CommonResponseInterceptor());
 
   const configService = app.get(ConfigService);
+  app.setGlobalPrefix('api/v1');
   const logger = app.get(AppLoggerService);
   const port = configService.get<string>('PORT') ?? 8000;
   logger.log(`Application started on port: ${port}`);
@@ -37,6 +38,7 @@ async function bootstrap() {
     .setDescription('The frontdesk API description')
     .setVersion('1.0')
     .addBearerAuth()
+    .setBasePath('api/v1')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, documentFactory);

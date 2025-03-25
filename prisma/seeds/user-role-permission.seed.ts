@@ -13,6 +13,7 @@ async function upsertRole(name: string, description: string) {
       Id: uuidv4(),
       Name: name,
       Description: description,
+      CreatedAt: new Date().toISOString(),
     },
   });
 }
@@ -26,6 +27,7 @@ async function upsertPermission(name: string, description: string) {
       Id: uuidv4(),
       Name: name,
       Description: description,
+      CreatedAt: new Date().toISOString(),
     },
   });
 }
@@ -48,6 +50,7 @@ async function upsertUser(email: string, password: string, roleIds: string[]) {
       Id: uuidv4(),
       Email: email,
       Password: password,
+      CreatedAt: new Date().toISOString(),
       UserRoles: {
         create: roleIds.map(roleId => ({
           Id: uuidv4(),

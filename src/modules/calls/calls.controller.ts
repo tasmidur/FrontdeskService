@@ -100,12 +100,13 @@ export class CallsController {
       const roomExtension = extension?.RoomExtensions[0]; // Assuming there's at least one room extension
       const room = roomExtension?.Rooms; // Assuming there's at least one room
       const guestStayHistory = room?.GuestStayHistory[0]; // Assuming there's at least one guest stay history
-      const guest = guestStayHistory?.StayingGuestDetails[0]?.Guests;
+      const guest = guestStayHistory?.Guests || call?.Guest;
+
       return {
         RoomNumber: room?.RoomNo || null,
         PropertyName: request?.user?.ActiveProperty?.Name || null, // Assuming property name is available in the request
         GuestName: guest ? `${guest.FirstName} ${guest.LastName}` : null,
-        GuestStatus: guestStayHistory ? 'Checked In' : 'Checked Out', // You can adjust this logic based on your requirements
+        GuestStatus: guestStayHistory ? 'Checked In' : null, // You can adjust this logic based on your requirements
         ExtensionNumber: extension?.ExtensionNumber || null,
         CallType: call.CallType || null,
         CallStatus: call.CallStatus || null,

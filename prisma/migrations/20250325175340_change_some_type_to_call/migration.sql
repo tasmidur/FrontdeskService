@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Call" ALTER COLUMN "ExtensionId_FK" DROP NOT NULL,
+ALTER COLUMN "GuestId_FK" DROP NOT NULL;

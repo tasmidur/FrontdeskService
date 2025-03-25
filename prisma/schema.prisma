@@ -27,6 +27,7 @@ model UserProperty {
   PropertyId_FK String    @db.Uuid
   CreatedAt     DateTime
   UpdatedAt     DateTime?
+  IsActive      Boolean   @default(true)
 
   User     User?     @relation("UserToUserProperty", fields: [UserId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
   Property Property? @relation("PropertyToUserProperty", fields: [PropertyId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
@@ -156,8 +157,8 @@ model GuestStayHistory {
   Id                   String    @id @db.Uuid
   ReservationId_FK     String    @db.Uuid
   RoomId_FK            String    @db.Uuid
-  NumberOfAdults       String
-  NumberOfChilden      String?
+  NumberOfAdults       Int
+  NumberOfChilden      Int?
   ActualCheckedInDate  String?
   ActualCheckedOutDate String?
   Notes                String?
@@ -382,8 +383,8 @@ model RoomExtensions {
 
 model Call {
   Id             String      @id @db.Uuid
-  ExtensionId_FK String      @db.Uuid
-  GuestId_FK     String      @db.Uuid
+  ExtensionId_FK String?     @db.Uuid
+  GuestId_FK     String?     @db.Uuid
   Extension      Extensions? @relation("ExtensionToCall", fields: [ExtensionId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
   Guest          Guests?     @relation("GuestToCall", fields: [GuestId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
   CallType       String

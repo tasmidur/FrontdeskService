@@ -43,11 +43,7 @@ export class GuestsService {
             ActualCheckedOutDate: null,
           },
           include: {
-            StayingGuestDetails: {
-              include: {
-                Guests: true,
-              },
-            },
+            Guests: true,
           },
         },
         RoomType: {
@@ -71,7 +67,7 @@ export class GuestsService {
     }
 
     const guestStay = result.GuestStayHistory[0];
-    const stayingGuest = guestStay?.StayingGuestDetails[0]?.Guests;
+    const stayingGuest = guestStay?.Guests;
     const extension = result.RoomExtensions[0]?.Extensions;
 
     return {

@@ -3,7 +3,6 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppLoggerService } from './common/logger/logger.service';
 import { UtilsModule } from './common/utils/utils.module';
-import { AppService } from './modules/auth/app.service';
 import { CheckInEventWebhookModule } from './modules/check-in-event-webhook/check-in-event-webhook.module';
 import { PrismaModule } from './modules/database/prisma.module'; // PrismaModule already provides PrismaService
 import { ExtensionsModule } from './modules/extensions/extensions.module';
@@ -19,6 +18,7 @@ import { SubscriptionEventWebhookModule } from './modules/subscription-event-web
 
 import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
+import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { AuthGuard } from './modules/auth/guards/auth.guard';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';

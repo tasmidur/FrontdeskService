@@ -89,11 +89,7 @@ export class RoomsService {
             ActualCheckedOutDate: null,
           },
           include: {
-            StayingGuestDetails: {
-              include: {
-                Guests: true,
-              },
-            },
+            Guests: true,
           },
         },
         RoomType: {
@@ -129,11 +125,7 @@ export class RoomsService {
             ActualCheckedOutDate: null,
           },
           include: {
-            StayingGuestDetails: {
-              include: {
-                Guests: true,
-              },
-            },
+            Guests: true,
           },
         },
         RoomType: {

@@ -10,32 +10,19 @@ const speedDialServices = [
 ];
 
 export async function seedExtension() {
-  const dataSet = [
-    {
+  const subDepartment = await prisma.subDepartment.findMany();
+  const dataSet = subDepartment?.map((_item, index) => {
+    return {
       Id: uuidv4(),
-      DepartmentNum: 'Security',
-      ExtensionNumber: '00610',
+      DivisionId_FK: _item?.DivisionId_FK,
+      DepartmentId_FK: _item?.DepartmentId_FK,
+      SubDepartmentId_FK: _item?.Id,
+      ExtensionNumber: `0061${index}`,
       PropertyId_FK: '72a144cc-3dcd-4a7e-aa07-e31a47b3f3b5',
       IsActive: 'true',
       CreatedAt: new Date().toISOString(),
-    },
-    {
-      Id: uuidv4(),
-      DepartmentNum: 'Security',
-      ExtensionNumber: '00003',
-      PropertyId_FK: '72a144cc-3dcd-4a7e-aa07-e31a47b3f3b5',
-      IsActive: 'true',
-      CreatedAt: new Date().toISOString(),
-    },
-    {
-      Id: uuidv4(),
-      DepartmentNum: 'Security',
-      ExtensionNumber: '09003',
-      PropertyId_FK: '72a144cc-3dcd-4a7e-aa07-e31a47b3f3b5',
-      IsActive: 'true',
-      CreatedAt: new Date().toISOString(),
-    },
-  ];
+    };
+  });
   for (const element of dataSet) {
     const service =
       speedDialServices[Math.floor(Math.random() * speedDialServices.length)];
@@ -46,6 +33,7 @@ export async function seedExtension() {
           create: [service].map(_item => ({
             Id: uuidv4(),
             ServiceType: _item,
+            CreatedAt: new Date().toISOString(),
           })),
         },
       },

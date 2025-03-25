@@ -3,6 +3,9 @@ CREATE TABLE "User" (
     "Id" UUID NOT NULL,
     "Email" TEXT NOT NULL,
     "Password" TEXT NOT NULL,
+    "IsActive" BOOLEAN NOT NULL DEFAULT true,
+    "CreatedAt" TIMESTAMP(3) NOT NULL,
+    "UpdatedAt" TIMESTAMP(3),
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("Id")
 );
@@ -12,9 +15,9 @@ CREATE TABLE "UserProperty" (
     "Id" UUID NOT NULL,
     "UserId_FK" UUID,
     "PropertyId_FK" UUID NOT NULL,
-    "IsActive" BOOLEAN NOT NULL DEFAULT false,
-    "CreatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "CreatedAt" TIMESTAMP(3) NOT NULL,
     "UpdatedAt" TIMESTAMP(3),
+    "IsActive" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "UserProperty_pkey" PRIMARY KEY ("Id")
 );
@@ -24,6 +27,9 @@ CREATE TABLE "Role" (
     "Id" UUID NOT NULL,
     "Name" TEXT NOT NULL,
     "Description" TEXT,
+    "IsActive" BOOLEAN NOT NULL DEFAULT true,
+    "CreatedAt" TIMESTAMP(3) NOT NULL,
+    "UpdatedAt" TIMESTAMP(3),
 
     CONSTRAINT "Role_pkey" PRIMARY KEY ("Id")
 );
@@ -42,6 +48,9 @@ CREATE TABLE "Permission" (
     "Id" UUID NOT NULL,
     "Name" TEXT NOT NULL,
     "Description" TEXT,
+    "IsActive" BOOLEAN NOT NULL DEFAULT true,
+    "CreatedAt" TIMESTAMP(3) NOT NULL,
+    "UpdatedAt" TIMESTAMP(3),
 
     CONSTRAINT "Permission_pkey" PRIMARY KEY ("Id")
 );
@@ -61,8 +70,8 @@ CREATE TABLE "AuditLogs" (
     "ReferrenceId" TEXT,
     "ReferrenceType" TEXT,
     "Notes" TEXT,
-    "CreatedAt" TEXT,
     "ThirdPartySubscriptionId_FK" UUID,
+    "CreatedAt" TIMESTAMP(3),
 
     CONSTRAINT "AuditLogs_pkey" PRIMARY KEY ("Id")
 );
@@ -72,10 +81,10 @@ CREATE TABLE "GuestGroupMembers" (
     "Id" UUID NOT NULL,
     "GuestGroupId_FK" UUID NOT NULL,
     "GuestId_FK" UUID NOT NULL,
-    "CreatedAt" TEXT,
-    "UpdatedAt" TEXT,
     "IsPrimaryGuest" TEXT,
     "GuestShare" TEXT,
+    "CreatedAt" TIMESTAMP(3) NOT NULL,
+    "UpdatedAt" TIMESTAMP(3),
 
     CONSTRAINT "GuestGroupMembers_pkey" PRIMARY KEY ("Id")
 );
@@ -86,10 +95,10 @@ CREATE TABLE "GuestGroups" (
     "GuestGroupCode" TEXT NOT NULL,
     "GuestGroupType" TEXT,
     "GuestGroupName" TEXT NOT NULL,
-    "CreatedAt" TEXT,
-    "UpdatedAt" TEXT,
     "Description" TEXT,
     "PropertyId_FK" UUID NOT NULL,
+    "CreatedAt" TIMESTAMP(3),
+    "UpdatedAt" TIMESTAMP(3),
 
     CONSTRAINT "GuestGroups_pkey" PRIMARY KEY ("Id")
 );
@@ -118,15 +127,16 @@ CREATE TABLE "GuestStayHistory" (
     "Id" UUID NOT NULL,
     "ReservationId_FK" UUID NOT NULL,
     "RoomId_FK" UUID NOT NULL,
-    "NumberOfAdults" TEXT NOT NULL,
-    "NumberOfChilden" TEXT,
+    "NumberOfAdults" INTEGER NOT NULL,
+    "NumberOfChilden" INTEGER,
     "ActualCheckedInDate" TEXT,
     "ActualCheckedOutDate" TEXT,
     "Notes" TEXT,
-    "UpdatedBy" TEXT,
-    "CreatedAt" TEXT NOT NULL,
-    "UpdatedAt" TEXT,
     "IsShared" TEXT,
+    "GuestId_FK" UUID NOT NULL,
+    "UpdatedBy" TEXT,
+    "CreatedAt" TIMESTAMP(3) NOT NULL,
+    "UpdatedAt" TIMESTAMP(3),
 
     CONSTRAINT "GuestStayHistory_pkey" PRIMARY KEY ("Id")
 );
@@ -148,9 +158,9 @@ CREATE TABLE "Guests" (
     "NumberOfVisits" SMALLINT,
     "LastVisitedDate" TEXT,
     "Comments" TEXT,
-    "CreatedAt" TEXT,
-    "UpdatedAt" TEXT,
     "GuestCode" TEXT,
+    "CreatedAt" TIMESTAMP(3),
+    "UpdatedAt" TIMESTAMP(3),
 
     CONSTRAINT "Guests_pkey" PRIMARY KEY ("Id")
 );
@@ -161,9 +171,9 @@ CREATE TABLE "ReservationDetails" (
     "ReservationId_FK" UUID NOT NULL,
     "NumberOfRooms" TEXT NOT NULL,
     "Notes" TEXT,
-    "CreatedAt" TEXT NOT NULL,
-    "UpdatedAt" TEXT,
     "RoomTypeId_FK" UUID NOT NULL,
+    "CreatedAt" TIMESTAMP(3) NOT NULL,
+    "UpdatedAt" TIMESTAMP(3),
 
     CONSTRAINT "ReservationDetails_pkey" PRIMARY KEY ("Id")
 );
@@ -189,14 +199,14 @@ CREATE TABLE "Reservations" (
     "NumberOfAdults" TEXT NOT NULL,
     "NumberOfChilden" TEXT,
     "Notes" TEXT,
-    "CreatedAt" TEXT NOT NULL,
-    "UpdatedAt" TEXT,
-    "UpdatedBy" TEXT,
     "TemporaryLockDate" TEXT,
     "IsAutoSystemReservation" TEXT,
     "UtcReservationDate" TEXT,
     "UtcCheckInDate" TEXT,
     "UtcCheckOutDate" TEXT,
+    "CreatedAt" TEXT NOT NULL,
+    "UpdatedAt" TIMESTAMP(3),
+    "UpdatedBy" TIMESTAMP(3),
 
     CONSTRAINT "Reservations_pkey" PRIMARY KEY ("Id")
 );
@@ -208,8 +218,8 @@ CREATE TABLE "RoomType" (
     "RoomTypeName" TEXT NOT NULL,
     "IsActive" TEXT NOT NULL,
     "Notes" TEXT,
-    "CreatedAt" TEXT NOT NULL,
-    "UpdatedAt" TEXT,
+    "CreatedAt" TIMESTAMP(3) NOT NULL,
+    "UpdatedAt" TIMESTAMP(3),
 
     CONSTRAINT "RoomType_pkey" PRIMARY KEY ("Id")
 );
@@ -218,6 +228,7 @@ CREATE TABLE "RoomType" (
 CREATE TABLE "Rooms" (
     "Id" UUID NOT NULL,
     "PropertyId_FK" UUID NOT NULL,
+    "RoomTypeId_FK" UUID NOT NULL,
     "BuildingNo" TEXT,
     "FloorNo" TEXT,
     "RoomNo" TEXT NOT NULL,
@@ -227,36 +238,23 @@ CREATE TABLE "Rooms" (
     "NumberOfBathrooms" TEXT,
     "MaxCapacity" TEXT,
     "IsActive" TEXT NOT NULL,
-    "CreatedAt" TEXT NOT NULL,
-    "UpdatedAt" TEXT,
-    "RoomTypeId_FK" UUID NOT NULL,
+    "CreatedAt" TIMESTAMP(3) NOT NULL,
+    "UpdatedAt" TIMESTAMP(3),
 
     CONSTRAINT "Rooms_pkey" PRIMARY KEY ("Id")
-);
-
--- CreateTable
-CREATE TABLE "StayingGuestDetails" (
-    "Id" UUID NOT NULL,
-    "GuestStayHistoryId_FK" UUID NOT NULL,
-    "GuestId_FK" UUID NOT NULL,
-    "CreatedAt" TEXT NOT NULL,
-    "UpdatedAt" TEXT,
-    "GuestName" TEXT,
-
-    CONSTRAINT "StayingGuestDet_pkey" PRIMARY KEY ("Id")
 );
 
 -- CreateTable
 CREATE TABLE "ThirdPartySubscription" (
     "Id" UUID NOT NULL,
     "Source" TEXT,
-    "CreatedAt" TEXT NOT NULL,
     "SubscriptionData" TEXT NOT NULL,
     "ProcessStatus" TEXT,
     "ErrorMessage" TEXT,
     "ProcessDate" TEXT,
     "RetryNo" SMALLINT DEFAULT 0,
     "EventType" TEXT,
+    "CreatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "ThirdPartySubscription_pkey" PRIMARY KEY ("Id")
 );
@@ -266,13 +264,11 @@ CREATE TABLE "Extensions" (
     "Id" UUID NOT NULL,
     "PropertyId_FK" UUID NOT NULL,
     "ExtensionNumber" TEXT NOT NULL,
-    "CreatedAt" TEXT NOT NULL,
-    "IsActive" TEXT,
     "Notes" TEXT,
     "Category" TEXT,
-    "DepartmentNum" TEXT,
-    "DivisionNum" TEXT,
-    "SubDepartment" TEXT,
+    "DivisionId_FK" UUID,
+    "DepartmentId_FK" UUID,
+    "SubDepartmentId_FK" UUID,
     "FirstName" TEXT,
     "LastName" TEXT,
     "UserName" TEXT,
@@ -286,6 +282,9 @@ CREATE TABLE "Extensions" (
     "JazzUserId" TEXT,
     "PbxNum" TEXT,
     "AdditionalSpUserId" TEXT,
+    "IsActive" TEXT,
+    "CreatedAt" TIMESTAMP(3) NOT NULL,
+    "UpdatedAt" TIMESTAMP(3),
 
     CONSTRAINT "Extensions_pkey" PRIMARY KEY ("Id")
 );
@@ -295,9 +294,10 @@ CREATE TABLE "RoomExtensions" (
     "Id" UUID NOT NULL,
     "RoomId_FK" UUID NOT NULL,
     "ExtensionId_FK" UUID NOT NULL,
-    "CreatedAt" TEXT NOT NULL,
     "IsActive" TEXT,
     "Notes" TEXT,
+    "CreatedAt" TIMESTAMP(3) NOT NULL,
+    "UpdatedAt" TIMESTAMP(3),
 
     CONSTRAINT "RoomExtensions_pkey" PRIMARY KEY ("Id")
 );
@@ -306,12 +306,13 @@ CREATE TABLE "RoomExtensions" (
 CREATE TABLE "Call" (
     "Id" UUID NOT NULL,
     "ExtensionId_FK" UUID NOT NULL,
+    "GuestId_FK" UUID NOT NULL,
     "CallType" TEXT NOT NULL,
     "CallStatus" TEXT NOT NULL,
     "CallDuration" DOUBLE PRECISION,
     "VoiceMail" TEXT,
     "NextWakeUpCall" TIMESTAMP(3),
-    "CreatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "CreatedAt" TIMESTAMP(3) NOT NULL,
     "UpdatedAt" TIMESTAMP(3),
 
     CONSTRAINT "Call_pkey" PRIMARY KEY ("Id")
@@ -321,31 +322,60 @@ CREATE TABLE "Call" (
 CREATE TABLE "Property" (
     "Id" UUID NOT NULL,
     "Name" TEXT NOT NULL,
+    "Address" TEXT,
+    "CreatedAt" TIMESTAMP(3) NOT NULL,
+    "UpdatedAt" TIMESTAMP(3),
 
     CONSTRAINT "Property_pkey" PRIMARY KEY ("Id")
 );
 
--- AlterTable
-ALTER TABLE "Call" ALTER COLUMN "CreatedAt" DROP DEFAULT;
+-- CreateTable
+CREATE TABLE "Division" (
+    "Id" UUID NOT NULL,
+    "Name" TEXT NOT NULL,
+    "PropertyId_FK" UUID NOT NULL,
+    "CreatedAt" TIMESTAMP(3) NOT NULL,
+    "UpdatedAt" TIMESTAMP(3),
+
+    CONSTRAINT "Division_pkey" PRIMARY KEY ("Id")
+);
+
+-- CreateTable
+CREATE TABLE "Department" (
+    "Id" UUID NOT NULL,
+    "Name" TEXT NOT NULL,
+    "PropertyId_FK" UUID NOT NULL,
+    "DivisionId_FK" UUID,
+    "CreatedAt" TIMESTAMP(3) NOT NULL,
+    "UpdatedAt" TIMESTAMP(3),
+
+    CONSTRAINT "Department_pkey" PRIMARY KEY ("Id")
+);
+
+-- CreateTable
+CREATE TABLE "SubDepartment" (
+    "Id" UUID NOT NULL,
+    "Name" TEXT NOT NULL,
+    "PropertyId_FK" UUID NOT NULL,
+    "DivisionId_FK" UUID,
+    "DepartmentId_FK" UUID,
+    "CreatedAt" TIMESTAMP(3) NOT NULL,
+    "UpdatedAt" TIMESTAMP(3),
+
+    CONSTRAINT "SubDepartment_pkey" PRIMARY KEY ("Id")
+);
 
 -- CreateTable
 CREATE TABLE "SpeedDialExtension" (
     "Id" UUID NOT NULL,
     "ExtensionId_FK" UUID NOT NULL,
     "ServiceType" TEXT NOT NULL,
-    "CreatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "UpdatedAt" TIMESTAMP(3),
     "IsActive" BOOLEAN NOT NULL DEFAULT true,
+    "CreatedAt" TIMESTAMP(3) NOT NULL,
+    "UpdatedAt" TIMESTAMP(3),
 
     CONSTRAINT "SpeedDialExtension_pkey" PRIMARY KEY ("Id")
 );
-
--- CreateIndex
-CREATE UNIQUE INDEX "SpeedDialExtension_ServiceType_ExtensionId_FK_key" ON "SpeedDialExtension"("ServiceType", "ExtensionId_FK");
-
--- AddForeignKey
-ALTER TABLE "SpeedDialExtension" ADD CONSTRAINT "SpeedDialExtension_ExtensionId_FK_fkey" FOREIGN KEY ("ExtensionId_FK") REFERENCES "Extensions"("Id") ON DELETE CASCADE ON UPDATE CASCADE;
-
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_Email_key" ON "User"("Email");
@@ -366,7 +396,7 @@ CREATE UNIQUE INDEX "UserProperty_UserId_FK_PropertyId_FK_key" ON "UserProperty"
 CREATE UNIQUE INDEX "Role_Name_key" ON "Role"("Name");
 
 -- CreateIndex
-CREATE INDEX "Role_Name_idx" ON "Role"("Name");
+CREATE INDEX "Role_Name_IsActive_CreatedAt_idx" ON "Role"("Name", "IsActive", "CreatedAt");
 
 -- CreateIndex
 CREATE INDEX "fki_FkeyUser" ON "UserRole"("UserId_FK");
@@ -381,7 +411,7 @@ CREATE UNIQUE INDEX "UserRole_UserId_FK_RoleId_FK_key" ON "UserRole"("UserId_FK"
 CREATE UNIQUE INDEX "Permission_Name_key" ON "Permission"("Name");
 
 -- CreateIndex
-CREATE INDEX "Permission_Name_idx" ON "Permission"("Name");
+CREATE INDEX "Permission_Name_IsActive_CreatedAt_idx" ON "Permission"("Name", "IsActive", "CreatedAt");
 
 -- CreateIndex
 CREATE INDEX "fki_FkeyRolePermissionToRole" ON "RolePermission"("RoleId_FK");
@@ -393,7 +423,7 @@ CREATE INDEX "fki_FkeyRolePermissionToPermission" ON "RolePermission"("Permissio
 CREATE UNIQUE INDEX "RolePermission_RoleId_FK_PermissionId_FK_key" ON "RolePermission"("RoleId_FK", "PermissionId_FK");
 
 -- CreateIndex
-CREATE INDEX "fki_FkeySubscription" ON "AuditLogs"("ThirdPartySubscriptionId_FK");
+CREATE INDEX "fki_FkeySubscription" ON "AuditLogs"("ThirdPartySubscriptionId_FK", "CreatedAt");
 
 -- CreateIndex
 CREATE INDEX "fki_FKeyGroup" ON "GuestGroupMembers"("GuestGroupId_FK");
@@ -402,10 +432,25 @@ CREATE INDEX "fki_FKeyGroup" ON "GuestGroupMembers"("GuestGroupId_FK");
 CREATE INDEX "fki_FKeyGuestKey" ON "GuestGroupMembers"("GuestId_FK");
 
 -- CreateIndex
+CREATE INDEX "GuestGroupMembers_CreatedAt_idx" ON "GuestGroupMembers"("CreatedAt");
+
+-- CreateIndex
+CREATE INDEX "GuestGroups_GuestGroupCode_PropertyId_FK_CreatedAt_idx" ON "GuestGroups"("GuestGroupCode", "PropertyId_FK", "CreatedAt");
+
+-- CreateIndex
+CREATE INDEX "GuestMembership_Guest_Id_idx" ON "GuestMembership"("Guest_Id");
+
+-- CreateIndex
 CREATE INDEX "fki_FKeyReservation_GSH" ON "GuestStayHistory"("ReservationId_FK");
 
 -- CreateIndex
 CREATE INDEX "fki_FKeyRoomID" ON "GuestStayHistory"("RoomId_FK");
+
+-- CreateIndex
+CREATE INDEX "GuestStayHistory_GuestId_FK_CreatedAt_idx" ON "GuestStayHistory"("GuestId_FK", "CreatedAt");
+
+-- CreateIndex
+CREATE INDEX "Guests_GuestType_Email_Phone_GuestCode_idx" ON "Guests"("GuestType", "Email", "Phone", "GuestCode");
 
 -- CreateIndex
 CREATE INDEX "fki_FKeyReservation" ON "ReservationDetails"("ReservationId_FK");
@@ -414,19 +459,25 @@ CREATE INDEX "fki_FKeyReservation" ON "ReservationDetails"("ReservationId_FK");
 CREATE INDEX "fki_FKeyRoomType_RD" ON "ReservationDetails"("RoomTypeId_FK");
 
 -- CreateIndex
+CREATE INDEX "ReservationDetails_CreatedAt_idx" ON "ReservationDetails"("CreatedAt");
+
+-- CreateIndex
 CREATE INDEX "fki_FkeyGuest" ON "Reservations"("PrimaryGuestID_FK");
 
 -- CreateIndex
 CREATE INDEX "fki_FkeyGuestGroupMember" ON "Reservations"("GuestGroupMembersId_FK");
 
 -- CreateIndex
+CREATE INDEX "Reservations_CreatedAt_idx" ON "Reservations"("CreatedAt");
+
+-- CreateIndex
+CREATE INDEX "RoomType_CreatedAt_idx" ON "RoomType"("CreatedAt");
+
+-- CreateIndex
 CREATE INDEX "fki_FkeyRoomType_Rooms" ON "Rooms"("RoomTypeId_FK");
 
 -- CreateIndex
-CREATE INDEX "fki_FKeyGSH" ON "StayingGuestDetails"("GuestStayHistoryId_FK");
-
--- CreateIndex
-CREATE INDEX "fki_FKeyGuest_StayDet" ON "StayingGuestDetails"("GuestId_FK");
+CREATE INDEX "Rooms_CreatedAt_idx" ON "Rooms"("CreatedAt");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Property_Extension" ON "Extensions"("PropertyId_FK", "ExtensionNumber");
@@ -436,6 +487,30 @@ CREATE UNIQUE INDEX "Room_Extension" ON "RoomExtensions"("RoomId_FK", "Extension
 
 -- CreateIndex
 CREATE INDEX "Call_ExtensionId_FK_CreatedAt_idx" ON "Call"("ExtensionId_FK", "CreatedAt");
+
+-- CreateIndex
+CREATE INDEX "Property_CreatedAt_idx" ON "Property"("CreatedAt");
+
+-- CreateIndex
+CREATE INDEX "Division_CreatedAt_PropertyId_FK_idx" ON "Division"("CreatedAt", "PropertyId_FK");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Division_Name_PropertyId_FK_key" ON "Division"("Name", "PropertyId_FK");
+
+-- CreateIndex
+CREATE INDEX "Department_CreatedAt_PropertyId_FK_DivisionId_FK_idx" ON "Department"("CreatedAt", "PropertyId_FK", "DivisionId_FK");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Department_Name_PropertyId_FK_DivisionId_FK_key" ON "Department"("Name", "PropertyId_FK", "DivisionId_FK");
+
+-- CreateIndex
+CREATE INDEX "SubDepartment_CreatedAt_PropertyId_FK_DivisionId_FK_Departm_idx" ON "SubDepartment"("CreatedAt", "PropertyId_FK", "DivisionId_FK", "DepartmentId_FK");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "SubDepartment_Name_PropertyId_FK_DivisionId_FK_DepartmentId_key" ON "SubDepartment"("Name", "PropertyId_FK", "DivisionId_FK", "DepartmentId_FK");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "SpeedDialExtension_ServiceType_ExtensionId_FK_key" ON "SpeedDialExtension"("ServiceType", "ExtensionId_FK");
 
 -- AddForeignKey
 ALTER TABLE "UserProperty" ADD CONSTRAINT "UserProperty_UserId_FK_fkey" FOREIGN KEY ("UserId_FK") REFERENCES "User"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
@@ -471,6 +546,9 @@ ALTER TABLE "GuestGroups" ADD CONSTRAINT "GuestGroups_PropertyId_FK_fkey" FOREIG
 ALTER TABLE "GuestMembership" ADD CONSTRAINT "FKey_Guest_Membership" FOREIGN KEY ("Guest_Id") REFERENCES "Guests"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
+ALTER TABLE "GuestStayHistory" ADD CONSTRAINT "FKeyGuest_StayDet" FOREIGN KEY ("GuestId_FK") REFERENCES "Guests"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
 ALTER TABLE "GuestStayHistory" ADD CONSTRAINT "FKeyReservation_GSH" FOREIGN KEY ("ReservationId_FK") REFERENCES "Reservations"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
@@ -498,13 +576,16 @@ ALTER TABLE "Rooms" ADD CONSTRAINT "Rooms_PropertyId_FK_fkey" FOREIGN KEY ("Prop
 ALTER TABLE "Rooms" ADD CONSTRAINT "FkeyRoomType_Rooms" FOREIGN KEY ("RoomTypeId_FK") REFERENCES "RoomType"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "StayingGuestDetails" ADD CONSTRAINT "FKeyGSH" FOREIGN KEY ("GuestStayHistoryId_FK") REFERENCES "GuestStayHistory"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
-
--- AddForeignKey
-ALTER TABLE "StayingGuestDetails" ADD CONSTRAINT "FKeyGuest_StayDet" FOREIGN KEY ("GuestId_FK") REFERENCES "Guests"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
-
--- AddForeignKey
 ALTER TABLE "Extensions" ADD CONSTRAINT "Extensions_PropertyId_FK_fkey" FOREIGN KEY ("PropertyId_FK") REFERENCES "Property"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "Extensions" ADD CONSTRAINT "Extensions_DivisionId_FK_fkey" FOREIGN KEY ("DivisionId_FK") REFERENCES "Division"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "Extensions" ADD CONSTRAINT "Extensions_DepartmentId_FK_fkey" FOREIGN KEY ("DepartmentId_FK") REFERENCES "Department"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "Extensions" ADD CONSTRAINT "Extensions_SubDepartmentId_FK_fkey" FOREIGN KEY ("SubDepartmentId_FK") REFERENCES "SubDepartment"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "RoomExtensions" ADD CONSTRAINT "RoomExtensions_RoomId_FK_fkey" FOREIGN KEY ("RoomId_FK") REFERENCES "Rooms"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
@@ -514,3 +595,27 @@ ALTER TABLE "RoomExtensions" ADD CONSTRAINT "RoomExtensions_ExtensionId_FK_fkey"
 
 -- AddForeignKey
 ALTER TABLE "Call" ADD CONSTRAINT "Call_ExtensionId_FK_fkey" FOREIGN KEY ("ExtensionId_FK") REFERENCES "Extensions"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "Call" ADD CONSTRAINT "Call_GuestId_FK_fkey" FOREIGN KEY ("GuestId_FK") REFERENCES "Guests"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "Division" ADD CONSTRAINT "Division_PropertyId_FK_fkey" FOREIGN KEY ("PropertyId_FK") REFERENCES "Property"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "Department" ADD CONSTRAINT "Department_PropertyId_FK_fkey" FOREIGN KEY ("PropertyId_FK") REFERENCES "Property"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "Department" ADD CONSTRAINT "Department_DivisionId_FK_fkey" FOREIGN KEY ("DivisionId_FK") REFERENCES "Division"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "SubDepartment" ADD CONSTRAINT "SubDepartment_PropertyId_FK_fkey" FOREIGN KEY ("PropertyId_FK") REFERENCES "Property"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "SubDepartment" ADD CONSTRAINT "SubDepartment_DivisionId_FK_fkey" FOREIGN KEY ("DivisionId_FK") REFERENCES "Division"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "SubDepartment" ADD CONSTRAINT "SubDepartment_DepartmentId_FK_fkey" FOREIGN KEY ("DepartmentId_FK") REFERENCES "Department"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "SpeedDialExtension" ADD CONSTRAINT "SpeedDialExtension_ExtensionId_FK_fkey" FOREIGN KEY ("ExtensionId_FK") REFERENCES "Extensions"("Id") ON DELETE CASCADE ON UPDATE CASCADE;

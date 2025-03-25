@@ -13,7 +13,7 @@ import {
 export class EventDetailsDto {
   @ApiPropertyOptional({
     description: 'Unique identifier for the property (UUID)',
-    example: 'f90fe02e-37a8-4586-81fa-782f8b206207',
+    example: '72a144cc-3dcd-4a7e-aa07-e31a47b3f3b5',
     pattern: '^[^.,;?+]*$',
   })
   @IsString()

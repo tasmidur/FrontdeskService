@@ -23,7 +23,7 @@ export enum CallStatusEnum {
 export class CreateCallDto {
   @ApiProperty({
     description: 'Extension Number',
-    example: '5001',
+    example: '5002',
   })
   @IsString()
   ExtensionNumber: string;

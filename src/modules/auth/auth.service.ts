@@ -94,6 +94,7 @@ export class AuthService {
         Id: this.utilityService.generateUuid(),
         Email: email,
         Password: hashedPassword,
+        CreatedAt: this.utilityService.getCurrentISODate(),
         UserRoles: {
           create: roles.map(role => ({
             Id: this.utilityService.generateUuid(),

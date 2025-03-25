@@ -58,7 +58,7 @@ export class RoomsController {
     const rooms = await this.roomsService.getRooms(request);
     const response = rooms?.data?.map(room => {
       const guestStay = room?.GuestStayHistory[0];
-      const stayingGuest = guestStay?.StayingGuestDetails[0]?.Guests;
+      const stayingGuest = guestStay?.Guests;
       const extension = room?.RoomExtensions[0]?.Extensions;
       return {
         Id: room?.Id,
@@ -107,7 +107,7 @@ export class RoomsController {
   async getRoomDetails(@Param('id') id: string): Promise<any> {
     const room = await this.roomsService.getRoom(id);
     const guestStay = room?.GuestStayHistory[0];
-    const stayingGuest = guestStay?.StayingGuestDetails[0]?.Guests;
+    const stayingGuest = guestStay?.Guests;
     const extension = room?.RoomExtensions[0]?.Extensions;
     return {
       Id: room?.Id,
