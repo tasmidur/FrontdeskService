@@ -21,14 +21,14 @@ export class ExtensionsController {
       success: true,
       message: 'Success',
       status: 200,
-      data: {
-        Id: 'aef7dbe6-185d-4d1e-944f-e6cea1c55d3a',
-        GuestName: 'Ms. Leia Organa',
-        GuestStatus: 'Checked In',
-        PropertyName: 'Hotel Jazz',
-        RoomNumber: '102',
-        ExtensionNumber: '5002',
-      },
+      data: [
+        {
+          Id: '4270fb88-ff05-4d72-a631-d705df16c54b',
+          ServiceType: 'Security',
+          ExtensionNumber: '00610',
+          PropertyName: 'Hotel Jazz',
+        },
+      ],
       Result: 'Success',
     },
   })

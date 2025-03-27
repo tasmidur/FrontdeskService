@@ -94,18 +94,34 @@ export class CallsService {
 
     // Calculate the offset for pagination
     const offset = (page - 1) * limit;
+    console.log('extensionNumber', extensionNumber);
 
-    const calls = await this.prismaService.call.findMany({
-      orderBy: { CreatedAt: 'desc' },
-      skip: offset, // Skip the records for the previous pages
-      take: limit, // Limit the number of records returned
-      include: {
-        Guest: true,
-        Extension: {
-          where: {
+    // Determine if extensionNumber is a phone number
+    const isPhone = this.utilityService.validatePhone(extensionNumber);
+
+    // Build the where clause for Call
+    const whereClause = isPhone
+      ? {
+          Guest: {
+            Phone: extensionNumber,
+          },
+        }
+      : {
+          Extension: {
             ExtensionNumber: extensionNumber,
             PropertyId_FK: propertyId,
           },
+        };
+
+    // Fetch paginated calls
+    const calls = await this.prismaService.call.findMany({
+      where: whereClause,
+      orderBy: { CreatedAt: 'desc' },
+      skip: offset,
+      take: limit,
+      include: {
+        Guest: true, // Always include Guest data
+        Extension: {
           include: {
             RoomExtensions: {
               include: {
@@ -125,10 +141,15 @@ export class CallsService {
       },
     });
 
+    // Fetch total count for pagination metadata
+    const total = await this.prismaService.call.count({
+      where: whereClause,
+    });
+
     return {
       page,
       limit,
-      total: calls?.length, // Total number of calls returned
+      total, // Total matching records in the database
       data: calls,
     };
   }
@@ -136,36 +157,76 @@ export class CallsService {
     extensionNumber: string,
     request: any,
   ): Promise<any> {
-    const propertyId = request?.user?.ActiveProperty?.Id;
-    const extension = await this.prismaService.extensions.findFirst({
+    if (this.utilityService.validatePhone(extensionNumber)) {
+      const guestDetails = await this.getCallInfoFromGuest(extensionNumber);
+      return {
+        GuestName: guestDetails?.FirstName + ' ' + guestDetails?.LastName,
+        GuestStatus: null,
+        CheckInDate: null,
+        CheckOutDate: null,
+        VoiceMail: null,
+        NextWakeUpCall: null,
+      };
+    } else {
+      const callData = await this.getCallInfoFromExtension(
+        extensionNumber,
+        request,
+      );
+      const extension = callData?.Extension;
+      const room = extension?.RoomExtensions[0]?.Rooms || ({} as any);
+      const guestStayHistory = room?.GuestStayHistory[0]; // Assuming there's at least one guest stay history
+      const guest = guestStayHistory?.Guests || ({} as any);
+
+      return {
+        PropertyName: extension?.Property?.Name || null,
+        RoomNumber: room?.RoomNo,
+        RoomType: room?.RoomType?.RoomTypeName || null,
+        RoomStatus: room?.RoomStatus,
+        GuestName: guest ? `${guest.FirstName} ${guest.LastName}` : null,
+        GuestStatus: guestStayHistory ? 'Checked In' : null, // You can adjust this logic based on your requirements
+        CheckInDate: guestStayHistory?.ActualCheckedInDate,
+        CheckOutDate: guestStayHistory?.ActualCheckedOutDate,
+        VoiceMail: callData?.VoiceMail,
+        NextWakeUpCall: callData?.NextWakeUpCall, // Assuming this is a property of the call data
+      };
+    }
+  }
+  async getCallInfoFromGuest(extensionNumber: string) {
+    return await this.prismaService.guests.findFirst({
       where: {
-        PropertyId_FK: propertyId,
-        ExtensionNumber: extensionNumber,
+        Phone: extensionNumber,
       },
+    });
+  }
+  async getCallInfoFromExtension(extensionNumber: string, request: any) {
+    const propertyId = request?.user?.ActiveProperty?.Id;
+    const call = await this.prismaService.call.findFirst({
       include: {
-        Property: true, // Include Property details
-        RoomExtensions: {
+        Extension: {
+          where: {
+            ExtensionNumber: extensionNumber,
+            PropertyId_FK: propertyId,
+          },
           include: {
-            Rooms: {
+            RoomExtensions: {
               include: {
-                GuestStayHistory: {
-                  where: {
-                    ActualCheckedOutDate: null, // Assume active stay if not checked out
+                Rooms: {
+                  include: {
+                    GuestStayHistory: {
+                      where: { ActualCheckedOutDate: null },
+                      take: 1,
+                      include: { Guests: true },
+                    },
+                    RoomType: true,
                   },
-                  take: 1, // Most recent stay
-                  include: { Guests: true },
                 },
-                RoomType: true, // Include Room Type details
               },
             },
+            Property: true,
           },
         },
-        Calls: {
-          orderBy: { CreatedAt: 'desc' }, // Sort by DateTime to get the most recent
-          take: 1, // Limit to 1 for the latest call
-        },
       },
-    }); // Include Property details
-    return extension;
+    });
+    return call;
   }
 }

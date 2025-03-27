@@ -85,6 +85,40 @@ export class CallsController {
   @ApiResponse({
     status: 200,
     description: 'Most recent call retrieved',
+    example: {
+      success: true,
+      message: 'Success',
+      status: 200,
+      data: {
+        page: 1,
+        limit: 10,
+        total: 2,
+        data: [
+          {
+            RoomNumber: '102',
+            PropertyName: 'Hotel Jazz',
+            GuestName: 'Ms. Leia Organa',
+            GuestStatus: 'Checked In',
+            ExtensionNumber: '5002',
+            CallType: 'Incoming',
+            CallStatus: 'Completed',
+            CallDuration: 10,
+            DateTime: '2025-03-25T17:55:53.710Z',
+          },
+          {
+            RoomNumber: null,
+            PropertyName: 'Hotel Jazz',
+            GuestName: 'Ms. Leia Organa',
+            GuestStatus: null,
+            ExtensionNumber: null,
+            CallType: 'Incoming',
+            CallStatus: 'Completed',
+            CallDuration: 20,
+            DateTime: '2025-03-25T18:06:27.959Z',
+          },
+        ],
+      },
+    },
   })
   @ApiResponse({ status: 404, description: 'No call found for this extension' })
   async getRecentCall(
@@ -141,6 +175,8 @@ export class CallsController {
         RoomNumber: '102',
         RoomType: 'Regular',
         RoomStatus: 'Occupied',
+        GuestName: 'Ms. Leia Organa',
+        GuestStatus: 'Checked In',
         CheckInDate: '2021-03-18T04:00:00.000Z',
         CheckOutDate: null,
         VoiceMail: null,
@@ -154,31 +190,9 @@ export class CallsController {
     @Param('extensionNumber') extensionNumber: string,
     @Request() request: any,
   ): Promise<any> {
-    const activeCallDetails = await this.callService.getActiveCallByExtension(
+    return await this.callService.getActiveCallByExtension(
       extensionNumber,
       request,
     );
-
-    // Early return if there are no active calls
-    if (!activeCallDetails || !activeCallDetails.Calls.length) {
-      return { message: 'No active calls found.' };
-    }
-
-    const { Calls, RoomExtensions, Property } = activeCallDetails;
-    const call = Calls[0]; // Assuming there's only one active call
-    const room = RoomExtensions[0]?.Rooms || {};
-
-    const response = {
-      PropertyName: Property?.Name,
-      RoomNumber: room.RoomNo,
-      RoomType: room?.RoomType?.RoomTypeName,
-      RoomStatus: room?.RoomStatus,
-      CheckInDate: room?.GuestStayHistory?.[0]?.ActualCheckedInDate,
-      CheckOutDate: room?.GuestStayHistory?.[0]?.ActualCheckedOutDate,
-      VoiceMail: call?.VoiceMail,
-      NextWakeUpCall: call?.NextWakeUpCall,
-    };
-
-    return response;
   }
 }

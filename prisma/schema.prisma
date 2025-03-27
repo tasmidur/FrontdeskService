@@ -157,13 +157,13 @@ model GuestStayHistory {
   Id                   String    @id @db.Uuid
   ReservationId_FK     String    @db.Uuid
   RoomId_FK            String    @db.Uuid
+  GuestId_FK           String    @db.Uuid
   NumberOfAdults       Int
   NumberOfChilden      Int?
   ActualCheckedInDate  String?
   ActualCheckedOutDate String?
   Notes                String?
   IsShared             String?
-  GuestId_FK           String    @db.Uuid
   UpdatedBy            String?
   CreatedAt            DateTime
   UpdatedAt            DateTime?
