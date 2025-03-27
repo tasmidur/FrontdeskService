@@ -28,3 +28,13 @@ Project Init:
   "password": "12345678"
  }
 ```
+
+# API LIST
+
+1. Auth API
+2. Property's Division, department, subdepartment schema and API
+3. Attach Auth User API with property
+4. Property List API
+5. Speed Dial API
+6. Active Call API
+7. Recent Call API
