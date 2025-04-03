@@ -3,10 +3,6 @@ import { Prisma } from '@prisma/client';
 import { UtilityService } from '../../common/utils/utility/utility.service';
 import { PrismaService } from '../database/prisma.service';
 import { EventDetailsDto } from './../check-in-event-webhook/dto/check-in.dto';
-import {
-  IGuestInfoParams,
-  IGuestInfoResponse,
-} from './interface/guest.interface';
 
 @Injectable()
 export class GuestsService {
@@ -15,71 +11,6 @@ export class GuestsService {
     private utilityService: UtilityService,
   ) {}
 
-  async getGuestInfoByRoomNumberOrExtentionNumber({
-    roomNumber,
-    extensionNumber,
-  }: IGuestInfoParams): Promise<IGuestInfoResponse | { error: string }> {
-    const result = await this.prismaService.rooms.findFirst({
-      where: {
-        OR: [
-          roomNumber ? { RoomNo: roomNumber } : undefined,
-          extensionNumber
-            ? {
-                RoomExtensions: {
-                  some: {
-                    Extensions: {
-                      ExtensionNumber: extensionNumber,
-                    },
-                  },
-                },
-              }
-            : undefined,
-        ].filter(Boolean),
-      },
-      include: {
-        GuestStayHistory: {
-          where: {
-            ActualCheckedInDate: { not: null },
-            ActualCheckedOutDate: null,
-          },
-          include: {
-            Guests: true,
-          },
-        },
-        RoomType: {
-          include: {
-            Property: true,
-          },
-        },
-        RoomExtensions: {
-          include: {
-            Extensions: true,
-          },
-        },
-      },
-    });
-
-    if (!result) {
-      return {
-        error:
-          'No room or active stay found for the provided room number or extension number',
-      };
-    }
-
-    const guestStay = result.GuestStayHistory[0];
-    const stayingGuest = guestStay?.Guests;
-    const extension = result.RoomExtensions[0]?.Extensions;
-
-    return {
-      guestName: stayingGuest
-        ? `${stayingGuest.FirstName} ${stayingGuest.LastName}`
-        : '',
-      guestStatus: guestStay ? 'Checked In' : '',
-      propertyName: result.RoomType.Property.Name,
-      roomNumber: result.RoomNo,
-      extensionNumber: extension?.ExtensionNumber || '',
-    };
-  }
   async updateOrCreateWebhookGuest(
     guest: EventDetailsDto,
     propertyId: string,
