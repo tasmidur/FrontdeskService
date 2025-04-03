@@ -23,11 +23,11 @@ export class EventDetailsDto {
   })
   PropertyUniqueId?: string;
 
-  @ApiPropertyOptional({
-    description: 'Enterprise ID from BWKS system',
-    example: 'ENT456',
-    pattern: '^[^.,;?+]*$',
-  })
+  // @ApiPropertyOptional({
+  //   description: 'Enterprise ID from BWKS system',
+  //   example: 'ENT456',
+  //   pattern: '^[^.,;?+]*$',
+  // })
   @IsString()
   @IsOptional()
   @Matches(/^[^.,;?+]*$/, {
@@ -35,11 +35,11 @@ export class EventDetailsDto {
   })
   BwksEnterpriseId?: string;
 
-  @ApiPropertyOptional({
-    description: 'Group ID from BWKS system',
-    example: 'GRP789',
-    pattern: '^[^.,;?+]*$',
-  })
+  // @ApiPropertyOptional({
+  //   description: 'Group ID from BWKS system',
+  //   example: 'GRP789',
+  //   pattern: '^[^.,;?+]*$',
+  // })
   @IsString()
   @IsOptional()
   @Matches(/^[^.,;?+]*$/, { message: 'BwksGroupId must not contain .,;?+' })
