@@ -23,6 +23,17 @@ CREATE TABLE "UserProperty" (
 );
 
 -- CreateTable
+CREATE TABLE "UserExtension" (
+    "Id" UUID NOT NULL,
+    "UserId_FK" UUID NOT NULL,
+    "ExtensionId_FK" UUID NOT NULL,
+    "CreatedAt" TIMESTAMP(3) NOT NULL,
+    "UpdatedAt" TIMESTAMP(3),
+
+    CONSTRAINT "UserExtension_pkey" PRIMARY KEY ("Id")
+);
+
+-- CreateTable
 CREATE TABLE "Role" (
     "Id" UUID NOT NULL,
     "Name" TEXT NOT NULL,
@@ -282,6 +293,7 @@ CREATE TABLE "Extensions" (
     "JazzUserId" TEXT,
     "PbxNum" TEXT,
     "AdditionalSpUserId" TEXT,
+    "Config" JSONB,
     "IsActive" TEXT,
     "CreatedAt" TIMESTAMP(3) NOT NULL,
     "UpdatedAt" TIMESTAMP(3),
@@ -391,6 +403,15 @@ CREATE INDEX "fki_FKeyUserPropertyToProperty" ON "UserProperty"("PropertyId_FK")
 
 -- CreateIndex
 CREATE UNIQUE INDEX "UserProperty_UserId_FK_PropertyId_FK_key" ON "UserProperty"("UserId_FK", "PropertyId_FK");
+
+-- CreateIndex
+CREATE INDEX "fki_FKeyUserExtensionToUser" ON "UserExtension"("UserId_FK");
+
+-- CreateIndex
+CREATE INDEX "fki_FKeyUserExtensionToExtension" ON "UserExtension"("ExtensionId_FK");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserExtension_UserId_FK_ExtensionId_FK_key" ON "UserExtension"("UserId_FK", "ExtensionId_FK");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Role_Name_key" ON "Role"("Name");
@@ -517,6 +538,12 @@ ALTER TABLE "UserProperty" ADD CONSTRAINT "UserProperty_UserId_FK_fkey" FOREIGN 
 
 -- AddForeignKey
 ALTER TABLE "UserProperty" ADD CONSTRAINT "UserProperty_PropertyId_FK_fkey" FOREIGN KEY ("PropertyId_FK") REFERENCES "Property"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "UserExtension" ADD CONSTRAINT "UserExtension_UserId_FK_fkey" FOREIGN KEY ("UserId_FK") REFERENCES "User"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "UserExtension" ADD CONSTRAINT "UserExtension_ExtensionId_FK_fkey" FOREIGN KEY ("ExtensionId_FK") REFERENCES "Extensions"("Id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "UserRole" ADD CONSTRAINT "UserRole_UserId_FK_fkey" FOREIGN KEY ("UserId_FK") REFERENCES "User"("Id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -1,11 +1,13 @@
-import { Controller, Get, Request } from '@nestjs/common';
+import { Body, Controller, Get, Post, Request } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { AssignExtensionDto } from './dto/extension.dto';
 import { ExtensionsService } from './extensions.service';
+
 @ApiTags('Extension')
 @Controller('extensions')
 export class ExtensionsController {
@@ -45,5 +47,23 @@ export class ExtensionsController {
       };
     });
     return response;
+  }
+  @Post('assign-extension-to-user')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Assign extension to user' })
+  @ApiResponse({
+    status: 200,
+    description: 'Assign extension to user',
+    example: {
+      success: true,
+      message: 'Success',
+      status: 200,
+      data: null, // data is null because we are not returning any data
+      Result: 'Success',
+    },
+  })
+  async assignExtension(@Body() body: AssignExtensionDto, @Request() request) {
+    await this.extensionsService.assignExtensionToUser(body, request);
+    return 'Success';
   }
 }

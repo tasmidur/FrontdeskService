@@ -16,7 +16,8 @@ model User {
   UpdatedAt DateTime?
 
   UserRoles      UserRole[] // Relation to the associative table
-  UserProperties UserProperty[] @relation("UserToUserProperty")
+  UserProperties UserProperty[]  @relation("UserToUserProperty")
+  UserExtension  UserExtension[] @relation("UserToUserExtension")
 
   @@index([Email])
 }
@@ -35,6 +36,20 @@ model UserProperty {
   @@unique([UserId_FK, PropertyId_FK])
   @@index([UserId_FK], map: "fki_FKeyUserPropertyToUser")
   @@index([PropertyId_FK], map: "fki_FKeyUserPropertyToProperty")
+}
+
+model UserExtension {
+  Id             String    @id @db.Uuid
+  UserId_FK      String    @db.Uuid
+  ExtensionId_FK String    @db.Uuid
+  CreatedAt      DateTime
+  UpdatedAt      DateTime?
+
+  User      User?       @relation("UserToUserExtension", fields: [UserId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
+  Extension Extensions? @relation("ExtensionToUserExtension", fields: [ExtensionId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([UserId_FK, ExtensionId_FK])
+  @@index([UserId_FK, ExtensionId_FK])
 }
 
 model Role {
@@ -303,18 +318,6 @@ model Rooms {
   @@index([CreatedAt])
 }
 
-// model StayingGuestDetails {
-//   Id                    String           @id(map: "StayingGuestDet_pkey") @db.Uuid
-//   GuestStayHistoryId_FK String           @db.Uuid
-//   CreatedAt             String
-//   UpdatedAt             String?
-//   GuestName             String?
-//   GuestStayHistory      GuestStayHistory @relation(fields: [GuestStayHistoryId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FKeyGSH")
-
-//   @@index([GuestStayHistoryId_FK], map: "fki_FKeyGSH")
-//   @@index([GuestId_FK], map: "fki_FKeyGuest_StayDet")
-// }
-
 model ThirdPartySubscription {
   Id               String   @id @db.Uuid
   Source           String?
@@ -352,6 +355,7 @@ model Extensions {
   JazzUserId          String?
   PbxNum              String?
   AdditionalSpUserId  String?
+  Config              Json?
   IsActive            String?
   CreatedAt           DateTime
   UpdatedAt           DateTime?
@@ -359,9 +363,10 @@ model Extensions {
   Calls               Call[]               @relation("ExtensionToCall")
   SpeedDialExtensions SpeedDialExtension[] @relation("ExtensionToSpeedDialExtension")
 
-  Division      Division?      @relation("ExtensionToDivision", fields: [DivisionId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
-  Department    Department?    @relation("ExtensionToDepartment", fields: [DepartmentId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
-  SubDepartment SubDepartment? @relation("ExtensionToSubDepartment", fields: [SubDepartmentId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
+  Division      Division?       @relation("ExtensionToDivision", fields: [DivisionId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
+  Department    Department?     @relation("ExtensionToDepartment", fields: [DepartmentId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
+  SubDepartment SubDepartment?  @relation("ExtensionToSubDepartment", fields: [SubDepartmentId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
+  UserExtension UserExtension[] @relation("ExtensionToUserExtension")
 
   @@unique([PropertyId_FK, ExtensionNumber], map: "Property_Extension")
 }

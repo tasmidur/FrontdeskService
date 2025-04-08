@@ -31,11 +31,29 @@ export class AuthService {
             Property: true,
           },
         },
+        UserExtension: {
+          include: {
+            Extension: true,
+          },
+        },
       },
     });
 
     if (!user) {
       throw new UnauthorizedException('User not found');
+    }
+    let extension = {};
+    if (user?.UserExtension?.length > 0 && user?.UserExtension[0]?.Extension) {
+      const extensionData = user?.UserExtension[0]?.Extension;
+      const config =
+        JSON.parse(JSON.stringify(extensionData?.Config || {})) || {};
+      extension = {
+        ...config,
+        InstanceId: extensionData.Id,
+        Extension: extensionData.ExtensionNumber,
+        ContactName: extensionData.ExtensionNumber,
+        DisplayName: extensionData.ExtensionNumber,
+      };
     }
 
     // Return user data to be set in request.user
@@ -49,6 +67,7 @@ export class AuthService {
       Properties: user?.UserProperties?.map(up => up.Property) || [], // Include user properties
       ActiveProperty: (user.UserProperties?.find(up => up.IsActive) || {})
         ?.Property, // Include active user properties
+      Extension: extension,
     };
   }
 

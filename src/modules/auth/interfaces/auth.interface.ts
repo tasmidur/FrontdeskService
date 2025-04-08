@@ -13,4 +13,5 @@ export interface IAuthUserResponse {
   Permissions: string[];
   Properties: any[];
   ActiveProperty?: any; // Optional if there may not be any active properties
+  Extension?: any; // Optional if there may not be any extension
 }
