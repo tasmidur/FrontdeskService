@@ -1,14 +1,24 @@
 import { Injectable, LoggerService } from '@nestjs/common';
-import { createLogger, format, transports, Logger } from 'winston';
-import * as DailyRotateFile from 'winston-daily-rotate-file';
 import { ConfigService } from '@nestjs/config';
+import { createLogger, format, Logger, transports } from 'winston';
+import * as DailyRotateFile from 'winston-daily-rotate-file';
 
 const { combine, timestamp, printf, colorize, errors } = format;
 
-const logFormat = printf(({ level, message, timestamp }: { level: string; message: string; timestamp: string | Date }) => {
-  const localTime = new Date(timestamp).toLocaleString();
-  return `${localTime} [${level}]: ${message}`;
-});
+const logFormat = printf(
+  ({
+    level,
+    message,
+    timestamp,
+  }: {
+    level: string;
+    message: string;
+    timestamp: string | Date;
+  }) => {
+    const localTime = new Date(timestamp).toLocaleString();
+    return `${localTime} [${level}]: ${message}`;
+  },
+);
 
 @Injectable()
 export class AppLoggerService implements LoggerService {
@@ -19,11 +29,7 @@ export class AppLoggerService implements LoggerService {
 
     this.logger = createLogger({
       level: logLevel,
-      format: combine(
-        timestamp(),
-        errors({ stack: true }),
-        logFormat
-      ),
+      format: combine(timestamp(), errors({ stack: true }), logFormat),
       transports: [
         new transports.Console({
           format: combine(colorize(), timestamp(), logFormat),
@@ -38,7 +44,7 @@ export class AppLoggerService implements LoggerService {
       ],
     });
 
-    this.logger.on('error', (err) => {
+    this.logger.on('error', err => {
       console.error('Error with logging system:', err);
     });
   }
