@@ -13,7 +13,7 @@ export class GuestStayHistoryService {
     guestId: string,
     checkInDate: string,
     roomId: string,
-    guestShare: string,
+    guestShare: boolean,
     guestName: string,
   ): Promise<any> {
     const utcCheckInDate =
@@ -27,7 +27,7 @@ export class GuestStayHistoryService {
         ActualCheckedInDate: utcCheckInDate,
         ReservationId_FK: reservationId,
         RoomId_FK: roomId,
-        IsShared: guestShare,
+        IsShared: String(guestShare),
       },
     });
   }

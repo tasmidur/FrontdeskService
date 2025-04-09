@@ -29,11 +29,7 @@ export class CheckInEventWebhookController {
     let source = 'Jazz';
     this.logger.log(`Post Call:CheckIn : request : ${reqBodyString}`);
     //business input validation
-    if (
-      !body.eventDetails.PropertyUniqueId &&
-      !body.eventDetails.BwksGroupId &&
-      !body.eventDetails.BwksEnterpriseId
-    ) {
+    if (!body?.eventDetails?.PropertyUniqueId) {
       return 'Invalid input';
     }
 

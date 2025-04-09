@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  IsBoolean,
   IsNotEmpty,
   IsNotEmptyObject,
   IsObject,
@@ -23,11 +24,11 @@ export class EventDetailsDto {
   })
   PropertyUniqueId?: string;
 
-  @ApiPropertyOptional({
-    description: 'Enterprise ID from BWKS system',
-    example: 'ENT456',
-    pattern: '^[^.,;?+]*$',
-  })
+  // @ApiPropertyOptional({
+  //   description: 'Enterprise ID from BWKS system',
+  //   example: 'ENT456',
+  //   pattern: '^[^.,;?+]*$',
+  // })
   @IsString()
   @IsOptional()
   @Matches(/^[^.,;?+]*$/, {
@@ -35,11 +36,11 @@ export class EventDetailsDto {
   })
   BwksEnterpriseId?: string;
 
-  @ApiPropertyOptional({
-    description: 'Group ID from BWKS system',
-    example: 'GRP789',
-    pattern: '^[^.,;?+]*$',
-  })
+  // @ApiPropertyOptional({
+  //   description: 'Group ID from BWKS system',
+  //   example: 'GRP789',
+  //   pattern: '^[^.,;?+]*$',
+  // })
   @IsString()
   @IsOptional()
   @Matches(/^[^.,;?+]*$/, { message: 'BwksGroupId must not contain .,;?+' })
@@ -67,17 +68,15 @@ export class EventDetailsDto {
 
   @ApiProperty({
     description: 'Check-in time in mm/dd/yyyy hh:mm:ss (24-hour) format',
-    example: '3/18/2021 10:00:00',
-    pattern:
-      '^(0?[1-9]|1[0-2])\\/(0?[1-9]|[12]\\d|3[01])\\/\\d{4} (0[0-9]|1[0-9]|2[0-3]):([0-5]\\d):([0-5]\\d)$',
+    example: '04/09/2025 03:57:37 AM',
   })
   @IsString()
   @IsNotEmpty()
   @Matches(
-    /^(0?[1-9]|1[0-2])\/(0?[1-9]|[12]\d|3[01])\/\d{4} (0[0-9]|1[0-9]|2[0-3]):([0-5]\d):([0-5]\d)$/,
+    /^(0?[1-9]|1[0-2])\/(0?[1-9]|[12]\d|3[01])\/\d{4} (0?[0-9]|1[0-2]):([0-5]\d):([0-5]\d) (AM|PM)$/i,
     {
       message:
-        'Invalid datetime format. Use mm/dd/yyyy hh:mm:ss in 24-hour format.',
+        'Invalid datetime format. Use mm/dd/yyyy hh:mm:ss AM/PM (e.g., 04/09/2025 03:57:37 AM).',
     },
   )
   CheckInTime: string;
@@ -163,28 +162,20 @@ export class EventDetailsDto {
   GuestLanguage?: string;
 
   @ApiProperty({
-    description: 'Indicates if the guest shares the room (true, false, 1, 0)',
-    example: 'true',
-    pattern: '^(true|false|1|0)$',
+    description: 'Indicates if the guest shares the room (true, false)',
+    example: true,
   })
-  @IsString()
+  @IsBoolean()
   @IsNotEmpty()
-  @Matches(/^(true|false|1|0)$/i, {
-    message: 'GuestShare must be "true", "True", "false", "False", "1", or "0"',
-  })
-  GuestShare: string;
+  GuestShare: boolean;
 
   @ApiProperty({
-    description: 'Indicates if data swap is enabled (true, false, 1, 0)',
-    example: 'false',
-    pattern: '^(true|false|1|0)$',
+    description: 'Indicates if data swap is enabled (true, false)',
+    example: false,
   })
-  @IsString()
+  @IsBoolean()
   @IsNotEmpty()
-  @Matches(/^(true|false|1|0)$/i, {
-    message: 'DataSwap must be "true", "True", "false", "False", "1", or "0"',
-  })
-  DataSwap: string;
+  DataSwap: boolean;
 
   @ApiPropertyOptional({
     description: 'Anticipated check-out date in mm/dd/yyyy format',
