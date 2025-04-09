@@ -21,7 +21,7 @@ export class UtilityService {
     return code;
   }
 
-  convertToUTCISODateString(dateString: string): string {
+  convertToUTCISODateString(dateString: string): string | null {
     const formats = [
       'M/d/yyyy HH:mm:ss',
       'MM/dd/yyyy HH:mm:ss',
@@ -31,26 +31,31 @@ export class UtilityService {
       'd/M/yyyy HH:mm:ss',
       'dd/MM/yyyy HH:mm:ss',
       'M-d-yyyy HH:mm:ss',
+      'MM/dd/yyyy hh:mm:ss a',
+      'M/d/yyyy h:mm:ss a', // ✅ This is for your case: 4/9/2025 3:57:37 AM
     ];
 
-    // parsing with each format
-    let parsedValidDate;
+    let parsedValidDate: DateTime | null = null;
+
     for (const format of formats) {
-      let parsedDate = DateTime.fromFormat(dateString, format, {
+      const parsedDate = DateTime.fromFormat(dateString, format, {
         zone: 'local',
       });
+
       if (parsedDate.isValid) {
         parsedValidDate = parsedDate;
         break;
       }
     }
-    if (parsedValidDate)
-      return parsedValidDate.toUTC().toISO(); // Convert to UTC ISO string
-    else {
-      console.error(`Invalid date format : ${dateString}`);
+
+    if (parsedValidDate) {
+      return parsedValidDate.toUTC().toISO();
+    } else {
+      console.error(`Invalid date format: ${dateString}`);
       return null;
     }
   }
+
   async hashPassword(password: string): Promise<string> {
     const saltRounds = 10; // You can adjust this value for security
     const salt = await bcrypt.genSalt(saltRounds); // Generate a dynamic salt
