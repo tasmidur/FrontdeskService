@@ -19,6 +19,7 @@ export class GuestStayHistoryService {
   ): Promise<any> {
     const utcCheckInDate =
       this.utilityService.convertToUTCISODateString(checkInDate);
+
     return this.prismaService.guestStayHistory.create({
       data: {
         Id: this.utilityService.generateUuid(),
