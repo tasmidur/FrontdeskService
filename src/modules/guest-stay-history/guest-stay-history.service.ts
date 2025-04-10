@@ -8,6 +8,7 @@ export class GuestStayHistoryService {
     private prismaService: PrismaService,
     private utilityService: UtilityService,
   ) {}
+
   async CreateWebhookGuestStay(
     reservationId: string,
     guestId: string,

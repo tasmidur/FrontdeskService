@@ -646,3 +646,12 @@ ALTER TABLE "SubDepartment" ADD CONSTRAINT "SubDepartment_DepartmentId_FK_fkey" 
 
 -- AddForeignKey
 ALTER TABLE "SpeedDialExtension" ADD CONSTRAINT "SpeedDialExtension_ExtensionId_FK_fkey" FOREIGN KEY ("ExtensionId_FK") REFERENCES "Extensions"("Id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- DropIndex
+DROP INDEX "fki_FKeyUserExtensionToExtension";
+
+-- DropIndex
+DROP INDEX "fki_FKeyUserExtensionToUser";
+
+-- CreateIndex
+CREATE INDEX "UserExtension_UserId_FK_ExtensionId_FK_idx" ON "UserExtension"("UserId_FK", "ExtensionId_FK");
