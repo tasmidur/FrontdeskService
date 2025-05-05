@@ -221,6 +221,20 @@ model Guests {
   @@index([GuestType, Email, Phone, GuestCode])
 }
 
+model GuestType {
+  Id            String    @id @default(uuid()) // UUID as primary key
+  PropertyId_FK String    @db.Uuid
+  Code          String
+  Title         String?
+  Description   String?
+  CreatedAt     DateTime  @default(now()) // Automatically set to current timestamp on creation
+  UpdatedAt     DateTime? @updatedAt // Automatically updated when record is modified
+  Property      Property  @relation("PropertyToGuestType", fields: [PropertyId_FK], references: [Id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([Code, PropertyId_FK])
+  @@index([PropertyId_FK, Code])
+}
+
 model ReservationDetails {
   Id               String    @id @db.Uuid
   ReservationId_FK String    @db.Uuid
@@ -419,6 +433,7 @@ model Property {
   Divisions      Division[]      @relation("DivisionToProperty")
   Department     Department[]    @relation("DepartmentToProperty")
   SubDepartment  SubDepartment[] @relation("SubDepartmentToProperty")
+  GuestType      GuestType[]     @relation("PropertyToGuestType")
 
   @@index([CreatedAt])
 }

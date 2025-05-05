@@ -65,8 +65,11 @@ export class GuestsService {
     let _guest;
 
     let _guestType = guest.VipStatus;
+    //TODO: A code indicating VIP status – the value varies based on PMS, need to map with pms and code wise naming
     if (!_guestType) {
       _guestType = 'Regular';
+    } else {
+      _guestType = 'Vip';
     }
 
     return tx.guests

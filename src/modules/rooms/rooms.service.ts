@@ -71,6 +71,7 @@ export class RoomsService {
     const propertyId = request?.user?.ActiveProperty?.Id;
     const page: number = parseInt(request?.query?.page) || 1; // Default to page 1
     const limit: number = parseInt(request?.query?.limit) || 10; // Default to limit 10
+
     // Validate page and limit
     if (page < 1 || limit < 1) {
       throw new Error('Page and limit must be positive integers.');
